@@ -7,6 +7,7 @@
 /coverage
 /test-results/
 storageState.json
+/Backend/node_modules/.cache/
 
 # Production
 /build
