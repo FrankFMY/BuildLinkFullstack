@@ -1,44 +1,104 @@
-# BuildLink - Backend
+# Backend — BuildLink API
 
-This directory contains the backend service for the BuildLink application, built with Node.js, Express, and MongoDB.
+Серверная часть BuildLink: REST API на Node.js/Express + MongoDB + TypeScript.
 
-## Prerequisites
+---
 
--   Node.js (v20 or higher recommended)
--   MongoDB (running instance, local or remote)
+## Описание
 
-## Getting Started
+Backend реализует всю бизнес-логику, хранение данных, аутентификацию, авторизацию и валидацию. Вся работа с объявлениями и пользователями — через защищённые эндпоинты.
 
-1.  **Clone the repository:**
+## Архитектура
 
-    ```bash
-    git clone https://github.com/FrankFMY/BuildLinkFullstack.git
-    cd BuildLinkFullstack/Backend
-    ```
+-   Express + TypeScript
+-   MongoDB (Mongoose ODM)
+-   JWT-аутентификация
+-   Модульная структура: controllers, models, routes, middleware
+-   Unit/E2E тесты (Jest, Supertest, mongodb-memory-server)
 
-2.  **Install dependencies:**
+## Основные возможности
 
-    ```bash
-    npm install
-    ```
+-   Регистрация и вход (JWT)
+-   CRUD объявлений
+-   Защита маршрутов (middleware)
+-   Валидация и обработка ошибок
+-   Полное покрытие тестами
 
-3.  **Set up environment variables:**
-    Create a `.env` file in this directory and add the following variables:
+## Переменные окружения
 
-    ```
-    MONGO_URI=your_mongodb_connection_string
-    JWT_SECRET=your_super_secret_jwt_key
-    ```
+Создайте `.env` в папке Backend:
 
-4.  **Run the development server:**
-    ```bash
-    npm run dev
-    ```
-    The server will start on `http://localhost:8000`.
+```
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_super_secret_jwt_key
+```
 
-## Available Scripts
+## Запуск
 
--   `npm run dev`: Starts the server with `nodemon` for automatic restarts.
--   `npm start`: Starts the server with `ts-node`.
--   `npm run build`: Compiles TypeScript to JavaScript.
--   `npm test`: Runs the Jest test suite.
+```bash
+npm install
+npm run dev # http://localhost:8000
+```
+
+## Скрипты
+
+-   `npm run dev` — запуск с hot-reload
+-   `npm start` — обычный запуск
+-   `npm run build` — компиляция TS
+-   `npm test` — все тесты
+
+## API (основные эндпоинты)
+
+### Auth
+
+-   `POST /api/auth/register` — регистрация
+-   `POST /api/auth/login` — вход
+-   `GET /api/auth/me` — профиль (JWT)
+
+### Ads
+
+-   `GET /api/ads` — список объявлений
+-   `POST /api/ads` — создать (JWT)
+-   `GET /api/ads/:id` — получить по id
+-   `PUT /api/ads/:id` — обновить (JWT, автор)
+-   `DELETE /api/ads/:id` — удалить (JWT, автор)
+
+### Пример запроса
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+{
+  "username": "user1",
+  "email": "user1@mail.com",
+  "password": "12345678"
+}
+```
+
+## Тестирование
+
+-   `npm test` — unit + интеграционные тесты (Jest, Supertest)
+-   Используется in-memory MongoDB, тесты изолированы
+
+## Деплой
+
+-   Любой Node.js-хостинг (Heroku, Render, Vercel, VPS)
+-   MongoDB Atlas или локальный сервер
+-   Не забудьте настроить переменные окружения!
+
+## Советы по развитию
+
+-   Соблюдайте стиль (ESLint, Prettier)
+-   Все новые фичи — с тестами
+-   Не храните секреты в git
+-   Для сложных фич — пишите документацию
+
+## FAQ
+
+-   **Как добавить поле в модель?** — Измените модель, обновите контроллеры, добавьте тесты
+-   **Как расширить API?** — Добавьте роут, контроллер, тесты
+-   **Как сбросить базу?** — Просто перезапустите тесты, данные не сохраняются
+
+---
+
+_Вопросы и баги — через Issues. Вклад приветствуется!_
