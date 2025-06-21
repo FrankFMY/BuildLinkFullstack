@@ -1,7 +1,8 @@
 import { authToken } from '$lib/stores/auth';
 import { get } from 'svelte/store';
 
-const BASE_URL = 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+if (!BASE_URL) throw new Error('VITE_API_BASE_URL is not set');
 
 async function send(method: string, path: string, data?: Record<string, unknown>) {
 	const opts: RequestInit = { method, headers: {} };

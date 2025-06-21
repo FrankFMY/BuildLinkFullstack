@@ -119,4 +119,37 @@ describe('Ads Endpoints', () => {
         expect(res.statusCode).toEqual(200);
         expect(res.body.message).toBe('Ad removed');
     });
+
+    it('не создаёт объявление с XSS в title', async () => {
+        const res = await request(app)
+            .post('/api/ads')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                title: '<script>alert(1)</script>',
+                description: 'desc',
+                price: 1,
+            });
+        // Ожидаем 400 или экранирование (зависит от политики)
+        expect([400, 201]).toContain(res.statusCode);
+        if (res.statusCode === 201) {
+            expect(res.body.title).not.toContain('<script>');
+        }
+    });
+
+    it('не создаёт объявление с очень длинным title', async () => {
+        const longTitle = 'a'.repeat(300);
+        const res = await request(app)
+            .post('/api/ads')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ title: longTitle, description: 'desc', price: 1 });
+        expect(res.statusCode).toBe(400);
+    });
+
+    it('не создаёт объявление с пустым description', async () => {
+        const res = await request(app)
+            .post('/api/ads')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ title: 'Test', description: '', price: 1 });
+        expect(res.statusCode).toBe(400);
+    });
 });

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import mongoose from 'mongoose';
 
 const notFound = (req: Request, res: Response, next: NextFunction) => {
     const error = new Error(`Not Found - ${req.originalUrl}`);
@@ -12,6 +13,17 @@ const errorHandler = (
     res: Response,
     next: NextFunction
 ) => {
+    // Обработка ошибок валидации Mongoose
+    if (err instanceof mongoose.Error.ValidationError) {
+        res.status(400);
+        res.json({
+            message: Object.values(err.errors)
+                .map((e) => e.message)
+                .join('; '),
+            type: 'ValidationError',
+        });
+        return;
+    }
     const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
     res.status(statusCode);
     res.json({

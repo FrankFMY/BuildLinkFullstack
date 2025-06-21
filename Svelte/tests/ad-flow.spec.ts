@@ -32,4 +32,14 @@ test.describe('Ad Management Flow', () => {
         await expect(page.locator(`div.card:has-text("${adTitle}")`)).toBeVisible();
         */
 	});
+
+	test('User can create an ad', async ({ page }) => {
+		await page.goto('/ads/create');
+		const adTitle = `Test Ad ${Date.now()}`;
+		await page.locator('input[placeholder="Заголовок"]').fill(adTitle);
+		await page.locator('textarea[placeholder="Описание"]').fill('Описание для теста');
+		await page.locator('input[placeholder="Цена"]').fill('123');
+		await page.locator('button:has-text("Создать")').click();
+		await page.waitForSelector('text=Объявление создано');
+	});
 });

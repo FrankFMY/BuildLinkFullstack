@@ -35,6 +35,9 @@
 			</svelte:fragment>
 			<svelte:fragment slot="trail">
 				{#if $user}
+					<a href="/ads/create" class="btn btn-sm variant-filled-secondary mr-2"
+						>Создать объявление</a
+					>
 					<span class="mr-2 hidden md:block">Привет, {$user.username}!</span>
 					<button class="btn btn-sm variant-filled" on:click={logout}>Выйти</button>
 				{:else}

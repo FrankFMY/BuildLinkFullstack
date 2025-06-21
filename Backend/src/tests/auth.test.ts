@@ -96,4 +96,65 @@ describe('Auth Endpoints', () => {
 
         expect(res.statusCode).toEqual(401);
     });
+
+    it('не регистрирует пользователя с некорректным email', async () => {
+        const res = await request(app).post('/api/auth/register').send({
+            username: 'user',
+            email: 'bademail',
+            password: 'password123',
+        });
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.message).toMatch(/email/i);
+    });
+
+    it('не регистрирует пользователя с коротким username', async () => {
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({ username: 'a', email: 'a@b.c', password: 'password123' });
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.message).toMatch(/username/i);
+    });
+
+    it('не регистрирует пользователя с коротким паролем', async () => {
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({ username: 'user', email: 'user@b.c', password: '123' });
+        expect(res.statusCode).toEqual(400);
+        expect(res.body.message).toMatch(/password/i);
+    });
+
+    it('не регистрирует пользователя с очень длинным username', async () => {
+        const longUsername = 'a'.repeat(100);
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({
+                username: longUsername,
+                email: 'long@b.c',
+                password: 'password123',
+            });
+        expect(res.statusCode).toBe(400);
+    });
+
+    it('не регистрирует пользователя с очень длинным email', async () => {
+        const longEmail = 'a'.repeat(100) + '@b.c';
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({
+                username: 'user',
+                email: longEmail,
+                password: 'password123',
+            });
+        expect(res.statusCode).toBe(400);
+    });
+
+    it('не регистрирует пользователя с email без @', async () => {
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({
+                username: 'user',
+                email: 'notanemail',
+                password: 'password123',
+            });
+        expect(res.statusCode).toBe(400);
+    });
 });

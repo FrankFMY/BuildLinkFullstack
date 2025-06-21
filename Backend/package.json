@@ -6,7 +6,9 @@
         "start": "ts-node -r dotenv/config src/index.ts",
         "dev": "nodemon --exec \"ts-node -r dotenv/config\" src/index.ts",
         "build": "tsc",
-        "test": "npx jest"
+        "test": "npx jest",
+        "test:coverage": "jest --coverage",
+        "lint": "npx eslint ./src --ext .ts"
     },
     "keywords": [],
     "author": "",
@@ -18,8 +20,13 @@
         "dotenv": "^16.5.0",
         "express": "^5.1.0",
         "express-async-handler": "^1.2.0",
+        "express-rate-limit": "^7.5.1",
+        "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.2",
-        "mongoose": "^8.16.0"
+        "mongoose": "^8.16.0",
+        "sanitize-html": "^2.17.0",
+        "swagger-jsdoc": "^6.2.8",
+        "swagger-ui-express": "^5.0.1"
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",
@@ -29,7 +36,9 @@
         "@types/jsonwebtoken": "^9.0.10",
         "@types/mongoose": "^5.11.96",
         "@types/node": "^24.0.3",
+        "@types/sanitize-html": "^2.16.0",
         "@types/supertest": "^6.0.3",
+        "@types/swagger-ui-express": "^4.1.8",
         "jest": "^29.7.0",
         "mongodb-memory-server": "^9.5.0",
         "nodemon": "^3.1.10",

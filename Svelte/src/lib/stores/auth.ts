@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
 // Тип для данных пользователя
@@ -16,6 +16,8 @@ const initialUser = browser ? JSON.parse(localStorage.getItem('user_profile') ||
 // Создаем сторы
 export const authToken = writable<string | null>(initialToken);
 export const user = writable<UserProfile | null>(initialUser);
+
+export const isAuthenticated = derived(authToken, ($authToken) => !!$authToken);
 
 // Синхронизация с localStorage
 authToken.subscribe((value) => {

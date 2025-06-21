@@ -26,11 +26,11 @@ Backend реализует всю бизнес-логику, хранение д
 
 ## Переменные окружения
 
-Создайте `.env` в папке Backend:
+Скопируйте `.env.example` в `.env` и укажите свои значения:
 
 ```
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_super_secret_jwt_key
+MONGO_URI=mongodb://localhost:27017/fullstack
+JWT_SECRET=your_jwt_secret
 ```
 
 ## Запуск
@@ -102,3 +102,14 @@ Content-Type: application/json
 ---
 
 _Вопросы и баги — через Issues. Вклад приветствуется!_
+
+## Документация API
+
+Swagger UI: [http://localhost:8000/api-docs](http://localhost:8000/api-docs)
+
+## Безопасность
+
+-   helmet: HTTP security headers
+-   express-rate-limit: ограничение частоты запросов
+-   sanitize-html: защита от XSS
+-   CORS: только http://localhost:5173

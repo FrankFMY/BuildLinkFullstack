@@ -2,6 +2,7 @@ import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Ad from '../models/Ad';
 import { AuthRequest } from '../types';
+import sanitizeHtml from 'sanitize-html';
 
 // @desc    Get all ads
 // @route   GET /api/ads
@@ -25,20 +26,22 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
 // @access  Private
 export const createAd = asyncHandler(
     async (req: AuthRequest, res: Response) => {
-        const { title, description, price } = req.body;
-
+        let { title, description, price } = req.body;
+        title = sanitizeHtml(title, { allowedTags: [], allowedAttributes: {} });
+        description = sanitizeHtml(description, {
+            allowedTags: [],
+            allowedAttributes: {},
+        });
         if (!title || !description) {
             res.status(400);
             throw new Error('Title and description are required');
         }
-
         const ad = new Ad({
             title,
             description,
             price: price || 0,
             author: req.user?.id,
         });
-
         const createdAd = await ad.save();
         res.status(201).json(createdAd);
     }
@@ -49,26 +52,29 @@ export const createAd = asyncHandler(
 // @access  Private
 export const updateAd = asyncHandler(
     async (req: AuthRequest, res: Response) => {
-        const { title, description, price } = req.body;
+        let { title, description, price } = req.body;
         const adId = req.params.id;
         const userId = req.user?.id;
-
         const ad = await Ad.findById(adId);
-
         if (!ad) {
             res.status(404);
             throw new Error('Ad not found');
         }
-
         if (ad.author?.toString() !== userId) {
             res.status(401);
             throw new Error('User not authorized');
         }
-
-        ad.title = title || ad.title;
-        ad.description = description || ad.description;
+        if (title)
+            ad.title = sanitizeHtml(title, {
+                allowedTags: [],
+                allowedAttributes: {},
+            });
+        if (description)
+            ad.description = sanitizeHtml(description, {
+                allowedTags: [],
+                allowedAttributes: {},
+            });
         ad.price = price !== undefined ? price : ad.price;
-
         const updatedAd = await ad.save();
         res.json(updatedAd);
     }

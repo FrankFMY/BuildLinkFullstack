@@ -11,8 +11,13 @@ export interface IAd extends Document {
 
 const AdSchema: Schema = new Schema(
     {
-        title: { type: String, required: true },
-        description: { type: String, required: true },
+        title: { type: String, required: true, minlength: 3, maxlength: 128 },
+        description: {
+            type: String,
+            required: true,
+            minlength: 3,
+            maxlength: 1024,
+        },
         price: { type: Number, required: true, default: 0 },
         author: {
             type: Schema.Types.ObjectId,

@@ -37,11 +37,10 @@
 
 <div class="container mx-auto flex h-full items-center justify-center">
 	<div class="card p-4 md:p-8 space-y-4 w-full max-w-md">
-		<!-- svelte-ignore a11y-autofocus -->
 		<h2 class="h2 text-center">Регистрация</h2>
 
 		<label class="label">
-			<span>Email</span>
+			<span class="label-text">Email</span>
 			<input
 				class="input"
 				type="email"
@@ -51,16 +50,16 @@
 			/>
 		</label>
 		<label class="label">
-			<span>Имя пользователя</span>
+			<span class="label-text">Имя пользователя</span>
 			<input class="input" type="text" bind:value={username} placeholder="username" required />
 		</label>
 		<label class="label">
-			<span>Пароль</span>
+			<span class="label-text">Пароль</span>
 			<input class="input" type="password" bind:value={password} placeholder="••••••••" required />
 		</label>
 
 		{#if error}
-			<p class="text-sm text-red-500">{error}</p>
+			<div class="alert variant-filled-error">{error}</div>
 		{/if}
 
 		<button class="btn variant-filled-primary w-full" on:click={handleRegister} disabled={loading}>
