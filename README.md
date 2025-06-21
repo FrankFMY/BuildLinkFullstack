@@ -16,7 +16,9 @@ BuildLink — учебно-боевой pet-проект для демонстр
 
 ```mermaid
 graph TD;
-  A[Пользователь] -- HTTP(S) --> B[Frontend (SvelteKit)] -- REST --> C[Backend (Express)] -- MongoDB --> D[(БД)]
+  A[Пользователь] -- HTTP(S) --> B[Frontend SvelteKit]
+  B -- REST --> C[Backend Express]
+  C -- MongoDB --> D[(БД)]
 ```
 
 ## Основные возможности
