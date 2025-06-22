@@ -27,6 +27,13 @@ const UserSchema: Schema = new Schema({
         minlength: 6,
         maxlength: 128,
     },
+    firstName: { type: String, trim: true, maxlength: 32 },
+    lastName: { type: String, trim: true, maxlength: 32 },
+    middleName: { type: String, trim: true, maxlength: 32 },
+    city: { type: String, trim: true, maxlength: 64 },
+    age: { type: Number, min: 0, max: 120 },
+    timezone: { type: String, trim: true, maxlength: 64 },
+    avatar: { type: String, trim: true, maxlength: 256 },
 });
 
 // Hash password before saving

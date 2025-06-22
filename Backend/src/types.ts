@@ -5,6 +5,13 @@ export interface IUser extends Document {
     username: string;
     email: string;
     password: string;
+    firstName?: string;
+    lastName?: string;
+    middleName?: string;
+    city?: string;
+    age?: number;
+    timezone?: string;
+    avatar?: string;
 }
 
 export interface IAd extends Document {

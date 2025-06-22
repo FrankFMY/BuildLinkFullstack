@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import authRoutes from './routes/authRoutes';
 import adRoutes from './routes/adRoutes';
+import userRoutes from './routes/userRoutes';
 import { errorHandler, notFound } from './middleware/errorMiddleware';
 import swaggerUi from 'swagger-ui-express';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -40,6 +41,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/ads', adRoutes);
+app.use('/api/users', userRoutes);
 
 // It's good practice to have error handling middleware
 // If you don't have them, I can add them.
