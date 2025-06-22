@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { IUser } from '../types';
 
@@ -58,3 +58,4 @@ UserSchema.index({ role: 1 });
 const User = mongoose.model<IUser>('User', UserSchema);
 
 export default User;
+

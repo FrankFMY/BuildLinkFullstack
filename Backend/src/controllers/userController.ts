@@ -26,8 +26,8 @@ export const getUserProfile = asyncHandler(
             'timezone',
             'avatar',
         ];
-        const userObj = user.toObject() as unknown as Record<string, any>;
-        const result: any = {};
+        const userObj = user.toObject() as unknown as Record<string, unknown>;
+        const result: Record<string, unknown> = {};
         publicFields.forEach((f) => {
             if (userObj[f] !== undefined) result[f] = userObj[f];
         });
@@ -88,6 +88,7 @@ export const updateMyProfile = asyncHandler(
                     res.status(400);
                     throw new Error('Некорректный возраст');
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (user as any)[field] = value;
             }
         }
@@ -95,3 +96,4 @@ export const updateMyProfile = asyncHandler(
         res.json({ message: 'Профиль обновлён', user });
     }
 );
+

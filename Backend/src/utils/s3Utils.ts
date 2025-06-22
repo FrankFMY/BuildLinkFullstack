@@ -3,7 +3,6 @@ import {
     PutObjectCommand,
     DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
-import { Readable } from 'stream';
 
 const s3 = new S3Client({
     region: process.env.YC_REGION,
@@ -47,3 +46,4 @@ export async function deleteFromS3(key: string) {
 export function getPublicUrl(key: string) {
     return `${PUBLIC_URL}/${key}`;
 }
+

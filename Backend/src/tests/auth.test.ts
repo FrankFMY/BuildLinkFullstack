@@ -1,7 +1,5 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
 import app from '../app'; // Corrected import path
-import User from '../models/User';
 
 describe('Auth Endpoints', () => {
     const testUser = {
@@ -183,3 +181,4 @@ describe('Auth Endpoints', () => {
         expect([400, 422]).toContain(res.statusCode);
     });
 });
+

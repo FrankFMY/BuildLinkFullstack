@@ -25,7 +25,7 @@ const upload = multer({
 export const uploadAvatar = [
     upload.single('avatar'),
     asyncHandler(async (req: Request, res: Response) => {
-        const userId = (req as any).user?.id;
+        const userId = (req as AuthRequest).user?.id;
         const file = req.file as Express.Multer.File;
         if (!file) throw new Error('Файл не загружен');
         const user = await User.findById(userId);
@@ -67,7 +67,7 @@ export const deleteAvatar = asyncHandler(
 export const uploadAdPhotos = [
     upload.array('photos', 6),
     asyncHandler(async (req: Request, res: Response) => {
-        const userId = (req as any).user?.id;
+        const userId = (req as AuthRequest).user?.id;
         const adId = req.body.adId || req.params.id;
         const ad = await Ad.findById(adId);
         if (!ad) throw new Error('Объявление не найдено');
@@ -116,3 +116,4 @@ export const deleteAdPhoto = asyncHandler(
 );
 
 export { upload };
+

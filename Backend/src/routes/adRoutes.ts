@@ -6,11 +6,7 @@ import {
     deleteAd,
 } from '../controllers/adController';
 import authMiddleware from '../middleware/authMiddleware';
-import {
-    uploadAdPhotos,
-    deleteAdPhoto,
-    upload,
-} from '../controllers/uploadController';
+import { uploadAdPhotos, deleteAdPhoto } from '../controllers/uploadController';
 
 const router = express.Router();
 
@@ -26,3 +22,4 @@ router.post('/:id/photos', authMiddleware, uploadAdPhotos);
 router.delete('/:id/photos/:photoKey', authMiddleware, deleteAdPhoto);
 
 export default router;
+

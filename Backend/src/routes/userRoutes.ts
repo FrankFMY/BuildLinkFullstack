@@ -1,11 +1,7 @@
 import express from 'express';
 import { getUserProfile, updateMyProfile } from '../controllers/userController';
 import authMiddleware from '../middleware/authMiddleware';
-import {
-    uploadAvatar,
-    deleteAvatar,
-    upload,
-} from '../controllers/uploadController';
+import { uploadAvatar, deleteAvatar } from '../controllers/uploadController';
 
 const router = express.Router();
 
@@ -19,3 +15,4 @@ router.post('/me/avatar', authMiddleware, uploadAvatar);
 router.delete('/me/avatar', authMiddleware, deleteAvatar);
 
 export default router;
+

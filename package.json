@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@types/express-validator": "^2.20.33",
+    "express-validator": "^7.2.1"
+  }
+}

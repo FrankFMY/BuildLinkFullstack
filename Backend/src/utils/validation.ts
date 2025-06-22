@@ -36,7 +36,7 @@ export function isValidPaymentType(paymentType: string): boolean {
 }
 
 // Валидация amount
-export function isValidAmount(amount: any): boolean {
+export function isValidAmount(amount: unknown): boolean {
     return typeof amount === 'number' && !isNaN(amount) && amount >= 0;
 }
 
@@ -44,3 +44,4 @@ export function isValidAmount(amount: any): boolean {
 // import { sanitizeString, isValidEmail } from './validation';
 // const safe = sanitizeString(input);
 // if (!isValidEmail(email)) throw new Error('Некорректный email');
+

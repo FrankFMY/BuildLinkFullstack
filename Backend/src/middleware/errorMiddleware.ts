@@ -11,7 +11,7 @@ const errorHandler = (
     err: Error,
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ) => {
     // Обработка ошибок валидации Mongoose
     if (err instanceof mongoose.Error.ValidationError) {
@@ -33,3 +33,4 @@ const errorHandler = (
 };
 
 export { notFound, errorHandler };
+

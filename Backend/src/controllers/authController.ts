@@ -1,30 +1,23 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import { AuthRequest } from '../types';
 import {
-    sanitizeString,
     isValidEmail,
     isValidUsername,
     isValidPhone,
+    sanitizeString,
 } from '../utils/validation';
-
-const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
-
-const generateToken = (id: string) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET as string, {
-        expiresIn: '30d',
-    });
-};
+import { generateToken } from '../utils/jwt';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
-        let { username, email, password, phone } = req.body;
+        let { username, email, phone } = req.body;
+        const { password } = req.body;
         username = sanitizeString(username);
         email = sanitizeString(email);
         phone = sanitizeString(phone);
@@ -111,3 +104,4 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
     }
     res.json(user);
 });
+

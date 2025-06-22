@@ -7,8 +7,7 @@ import adRoutes from './routes/adRoutes';
 import userRoutes from './routes/userRoutes';
 import { errorHandler, notFound } from './middleware/errorMiddleware';
 import swaggerUi from 'swagger-ui-express';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const swaggerSpec = require('./swagger.js');
+import swaggerSpec from './swagger.js';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
@@ -50,3 +49,4 @@ app.use(notFound);
 app.use(errorHandler);
 
 export default app;
+

@@ -9,6 +9,17 @@ import {
     isValidAmount,
 } from '../utils/validation';
 
+interface AdFilter {
+    type?: string;
+    paymentType?: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    author?: any;
+    amount?: { $gte?: number; $lte?: number };
+    price?: { $gte?: number; $lte?: number };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    $or?: Array<{ [key: string]: { $regex: any; $options: string } }>;
+}
+
 // @desc    Get all ads
 // @route   GET /api/ads
 // @access  Public
@@ -25,7 +36,7 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
         search,
     } = req.query;
 
-    const filter: any = {};
+    const filter: AdFilter = {};
     // Приведение типов фильтра
     if (type) filter.type = String(type);
     if (paymentType) filter.paymentType = String(paymentType);
@@ -73,12 +84,13 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
 // @access  Private
 export const createAd = asyncHandler(
     async (req: AuthRequest, res: Response) => {
-        let { title, description, price, type, paymentType, amount } = req.body;
-        title = sanitizeString(title);
-        description = sanitizeString(description);
+        const { title, description, price, type, paymentType, amount } =
+            req.body;
         if (!title || !description) {
-            res.status(400);
-            throw new Error('Title and description are required');
+            res.status(400).json({
+                message: 'Title and description are required',
+            });
+            return;
         }
         if (!isValidAdType(type)) {
             res.status(400);
@@ -111,7 +123,6 @@ export const createAd = asyncHandler(
 // @access  Private
 export const updateAd = asyncHandler(
     async (req: AuthRequest, res: Response) => {
-        let { title, description, price, type, paymentType, amount } = req.body;
         const adId = req.params.id;
         const userId = req.user?.id;
         const ad = await Ad.findById(adId);
@@ -123,6 +134,8 @@ export const updateAd = asyncHandler(
             res.status(401);
             throw new Error('User not authorized');
         }
+        const { title, description, price, type, paymentType, amount } =
+            req.body;
         if (title) ad.title = sanitizeString(title);
         if (description) ad.description = sanitizeString(description);
         if (type) {
@@ -144,7 +157,8 @@ export const updateAd = asyncHandler(
                 res.status(400);
                 throw new Error('Некорректный amount');
             }
-            amount = Number(amount);
+            const numericAmount = Number(amount);
+            ad.amount = numericAmount;
         }
         ad.price = price !== undefined ? price : ad.price;
         const updatedAd = await ad.save();
@@ -176,3 +190,4 @@ export const deleteAd = asyncHandler(
         res.json({ message: 'Ad removed' });
     }
 );
+
