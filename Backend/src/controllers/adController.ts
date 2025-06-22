@@ -2,7 +2,12 @@ import { Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import Ad from '../models/Ad';
 import { AuthRequest } from '../types';
-import sanitizeHtml from 'sanitize-html';
+import {
+    sanitizeString,
+    isValidAdType,
+    isValidPaymentType,
+    isValidAmount,
+} from '../utils/validation';
 
 // @desc    Get all ads
 // @route   GET /api/ads
@@ -69,27 +74,21 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
 export const createAd = asyncHandler(
     async (req: AuthRequest, res: Response) => {
         let { title, description, price, type, paymentType, amount } = req.body;
-        title = sanitizeHtml(title, { allowedTags: [], allowedAttributes: {} });
-        description = sanitizeHtml(description, {
-            allowedTags: [],
-            allowedAttributes: {},
-        });
+        title = sanitizeString(title);
+        description = sanitizeString(description);
         if (!title || !description) {
             res.status(400);
             throw new Error('Title and description are required');
         }
-        if (!type || !['request', 'offer'].includes(type)) {
+        if (!isValidAdType(type)) {
             res.status(400);
             throw new Error('Некорректный type (request/offer)');
         }
-        if (
-            paymentType &&
-            !['once', 'day', 'hour', 'month'].includes(paymentType)
-        ) {
+        if (paymentType && !isValidPaymentType(paymentType)) {
             res.status(400);
             throw new Error('Некорректный paymentType');
         }
-        if (amount !== undefined && (isNaN(amount) || amount < 0)) {
+        if (amount !== undefined && !isValidAmount(amount)) {
             res.status(400);
             throw new Error('Некорректный amount');
         }
@@ -124,35 +123,24 @@ export const updateAd = asyncHandler(
             res.status(401);
             throw new Error('User not authorized');
         }
-        if (title)
-            ad.title = sanitizeHtml(title, {
-                allowedTags: [],
-                allowedAttributes: {},
-            });
-        if (description)
-            ad.description = sanitizeHtml(description, {
-                allowedTags: [],
-                allowedAttributes: {},
-            });
+        if (title) ad.title = sanitizeString(title);
+        if (description) ad.description = sanitizeString(description);
         if (type) {
-            if (!['request', 'offer'].includes(type)) {
+            if (!isValidAdType(type)) {
                 res.status(400);
                 throw new Error('Некорректный type (request/offer)');
             }
             ad.type = type;
         }
         if (paymentType !== undefined) {
-            if (
-                paymentType &&
-                !['once', 'day', 'hour', 'month'].includes(paymentType)
-            ) {
+            if (!isValidPaymentType(paymentType)) {
                 res.status(400);
                 throw new Error('Некорректный paymentType');
             }
             ad.paymentType = paymentType;
         }
         if (amount !== undefined) {
-            if (isNaN(amount) || amount < 0) {
+            if (!isValidAmount(amount)) {
                 res.status(400);
                 throw new Error('Некорректный amount');
             }

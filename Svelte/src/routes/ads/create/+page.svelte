@@ -22,7 +22,7 @@
 		}
 		loading = true;
 		try {
-			const currentUser = get(user);
+			const currentUser = get(user) as { role?: string };
 			let type: 'request' | 'offer' = 'request';
 			if (currentUser?.role === 'seller') type = 'offer';
 			if (currentUser?.role === 'client') type = 'request';
@@ -37,8 +37,9 @@
 			});
 			success = 'Объявление создано';
 			setTimeout(() => goto('/'), 1000);
-		} catch (e: any) {
-			error = e?.data?.message || 'Ошибка создания';
+		} catch (e: unknown) {
+			const err = e as { data?: { message?: string } };
+			error = err?.data?.message || 'Ошибка создания';
 		} finally {
 			loading = false;
 		}

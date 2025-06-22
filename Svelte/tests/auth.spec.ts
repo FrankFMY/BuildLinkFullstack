@@ -47,3 +47,38 @@ test('successful registration and login flow', async ({ page }) => {
 	await page.waitForURL('/');
 	await expect(page.locator('button:has-text("Выйти")')).toBeVisible();
 });
+
+test('registration validation errors', async ({ page }) => {
+	await page.goto('/register');
+
+	// Пустые поля
+	await page.locator('button:has-text("Зарегистрироваться")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// Короткий пароль
+	await page.locator('input[type="email"]').fill('user@mail.com');
+	await page.locator('input[type="text"]').fill('user');
+	await page.locator('input[type="password"]').fill('123');
+	await page.locator('button:has-text("Зарегистрироваться")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// XSS в username
+	await page.locator('input[type="text"]').fill('<script>alert(1)</script>');
+	await page.locator('input[type="password"]').fill('password123');
+	await page.locator('button:has-text("Зарегистрироваться")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// Повторная регистрация
+	const uniqueUser = `testuser_${Date.now()}`;
+	await page.locator('input[type="email"]').fill(`${uniqueUser}@mail.com`);
+	await page.locator('input[type="text"]').fill(uniqueUser);
+	await page.locator('input[type="password"]').fill('password123');
+	await page.locator('button:has-text("Зарегистрироваться")').click();
+	await page.waitForURL('/');
+	await page.goto('/register');
+	await page.locator('input[type="email"]').fill(`${uniqueUser}@mail.com`);
+	await page.locator('input[type="text"]').fill(uniqueUser);
+	await page.locator('input[type="password"]').fill('password123');
+	await page.locator('button:has-text("Зарегистрироваться")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+});

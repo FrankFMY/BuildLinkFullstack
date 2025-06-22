@@ -10,6 +10,10 @@ export interface UserProfile {
 	email: string;
 	username: string;
 	created_at: string;
+	avatar?: string;
+	phone?: string;
+	city?: string;
+	timezone?: string;
 	role?: 'client' | 'seller' | 'both';
 }
 
@@ -21,6 +25,7 @@ const initialUser = isBrowser
 			if (!raw) return null;
 			const parsed = JSON.parse(raw);
 			if (!('role' in parsed)) parsed.role = 'client';
+			if ('avatar' in parsed && parsed.avatar === null) parsed.avatar = undefined;
 			return parsed;
 		})()
 	: null;
@@ -45,7 +50,9 @@ authToken.subscribe((value) => {
 user.subscribe((value) => {
 	if (isBrowser) {
 		if (value) {
-			localStorage.setItem('user_profile', JSON.stringify(value));
+			const toSave = { ...value };
+			if ('avatar' in toSave && toSave.avatar === null) toSave.avatar = undefined;
+			localStorage.setItem('user_profile', JSON.stringify(toSave));
 		} else {
 			localStorage.removeItem('user_profile');
 		}

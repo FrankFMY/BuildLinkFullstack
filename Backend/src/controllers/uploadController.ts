@@ -25,31 +25,26 @@ const upload = multer({
 export const uploadAvatar = [
     upload.single('avatar'),
     asyncHandler(async (req: Request, res: Response) => {
-        try {
-            const userId = (req as any).user?.id;
-            const file = req.file as Express.Multer.File;
-            if (!file) throw new Error('Файл не загружен');
-            const user = await User.findById(userId);
-            if (!user) throw new Error('Пользователь не найден');
-            // Оптимизация изображения
-            const buffer = await sharp(file.buffer)
-                .resize(256, 256, { fit: 'cover' })
-                .toFormat('webp')
-                .toBuffer();
-            const key = `avatars/${user._id}.webp`;
-            const url = await uploadToS3(key, buffer, 'image/webp');
-            // Удаляем старый аватар, если был
-            if (user.avatar && user.avatar.includes('avatars/')) {
-                const oldKey = user.avatar.split('.net/')[1];
-                if (oldKey && oldKey !== key) await deleteFromS3(oldKey);
-            }
-            user.avatar = url;
-            await user.save();
-            res.json({ avatar: url });
-        } catch (err: any) {
-            console.error('Ошибка загрузки аватара:', err);
-            res.status(500).json({ error: err.message, stack: err.stack });
+        const userId = (req as any).user?.id;
+        const file = req.file as Express.Multer.File;
+        if (!file) throw new Error('Файл не загружен');
+        const user = await User.findById(userId);
+        if (!user) throw new Error('Пользователь не найден');
+        // Оптимизация изображения
+        const buffer = await sharp(file.buffer)
+            .resize(256, 256, { fit: 'cover' })
+            .toFormat('webp')
+            .toBuffer();
+        const key = `avatars/${user._id}.webp`;
+        const url = await uploadToS3(key, buffer, 'image/webp');
+        // Удаляем старый аватар, если был
+        if (user.avatar && user.avatar.includes('avatars/')) {
+            const oldKey = user.avatar.split('.net/')[1];
+            if (oldKey && oldKey !== key) await deleteFromS3(oldKey);
         }
+        // Обновляем только поле avatar
+        await User.updateOne({ _id: userId }, { avatar: url });
+        res.json({ avatar: url });
     }),
 ];
 
@@ -61,9 +56,9 @@ export const deleteAvatar = asyncHandler(
         if (user.avatar && user.avatar.includes('avatars/')) {
             const key = user.avatar.split('.net/')[1];
             await deleteFromS3(key);
-            user.avatar = '';
-            await user.save();
         }
+        // Обновляем только поле avatar
+        await User.updateOne({ _id: user._id }, { avatar: '' });
         res.json({ message: 'Аватар удалён' });
     }
 );
@@ -72,62 +67,51 @@ export const deleteAvatar = asyncHandler(
 export const uploadAdPhotos = [
     upload.array('photos', 6),
     asyncHandler(async (req: Request, res: Response) => {
-        try {
-            const userId = (req as any).user?.id;
-            const adId = req.body.adId || req.params.id;
-            const ad = await Ad.findById(adId);
-            if (!ad) throw new Error('Объявление не найдено');
-            if (ad!.author.toString() !== userId)
-                throw new Error('Нет доступа');
-            const files = req.files as Express.Multer.File[];
-            if (!files || files.length === 0) throw new Error('Нет файлов');
-            if (ad!.photos.length + files.length > 6)
-                throw new Error('Максимум 6 фото');
-            const uploaded: string[] = [];
-            for (const file of files) {
-                const buffer = await sharp(file.buffer)
-                    .resize(1024, 1024, { fit: 'inside' })
-                    .toFormat('webp')
-                    .toBuffer();
-                const key = `ads/${
-                    ad._id
-                }/${Date.now()}-${file.originalname.replace(/\s/g, '')}.webp`;
-                const url = await uploadToS3(key, buffer, 'image/webp');
-                ad!.photos.push(url);
-                uploaded.push(url);
-            }
-            await ad!.save();
-            res.json({ photos: uploaded, allPhotos: ad!.photos });
-        } catch (err: any) {
-            console.error('Ошибка загрузки фото объявления:', err);
-            res.status(500).json({ error: err.message, stack: err.stack });
+        const userId = (req as any).user?.id;
+        const adId = req.body.adId || req.params.id;
+        const ad = await Ad.findById(adId);
+        if (!ad) throw new Error('Объявление не найдено');
+        if (ad!.author.toString() !== userId) throw new Error('Нет доступа');
+        const files = req.files as Express.Multer.File[];
+        if (!files || files.length === 0) throw new Error('Нет файлов');
+        if (ad!.photos.length + files.length > 6)
+            throw new Error('Максимум 6 фото');
+        const uploaded: string[] = [];
+        for (const file of files) {
+            const buffer = await sharp(file.buffer)
+                .resize(1024, 1024, { fit: 'inside' })
+                .toFormat('webp')
+                .toBuffer();
+            const key = `ads/${
+                ad._id
+            }/${Date.now()}-${file.originalname.replace(/\s/g, '')}.webp`;
+            const url = await uploadToS3(key, buffer, 'image/webp');
+            ad!.photos.push(url);
+            uploaded.push(url);
         }
+        await ad!.save();
+        res.json({ photos: uploaded, allPhotos: ad!.photos });
     }),
 ];
 
 // Удаление фото объявления
 export const deleteAdPhoto = asyncHandler(
     async (req: AuthRequest, res: Response) => {
-        try {
-            const { id, photoKey } = req.params;
-            const ad = await Ad.findById(id);
-            if (!ad) throw new Error('Объявление не найдено');
-            if (ad.author.toString() !== req.user?.id)
-                throw new Error('Нет доступа');
-            let key = photoKey;
-            if (!photoKey.includes('/')) {
-                key = `ads/${id}/${photoKey}`;
-            }
-            const url = ad.photos.find((p) => p.includes(key));
-            if (!url) throw new Error('Фото не найдено');
-            await deleteFromS3(key);
-            ad.photos = ad.photos.filter((p) => !p.includes(key));
-            await ad.save();
-            res.json({ message: 'Фото удалено' });
-        } catch (err: any) {
-            console.error('Ошибка удаления фото объявления:', err);
-            res.status(500).json({ error: err.message, stack: err.stack });
+        const { id, photoKey } = req.params;
+        const ad = await Ad.findById(id);
+        if (!ad) throw new Error('Объявление не найдено');
+        if (ad.author.toString() !== req.user?.id)
+            throw new Error('Нет доступа');
+        let key = photoKey;
+        if (!photoKey.includes('/')) {
+            key = `ads/${id}/${photoKey}`;
         }
+        const url = ad.photos.find((p) => p.includes(key));
+        if (!url) throw new Error('Фото не найдено');
+        await deleteFromS3(key);
+        ad.photos = ad.photos.filter((p) => !p.includes(key));
+        await ad.save();
+        res.json({ message: 'Фото удалено' });
     }
 );
 

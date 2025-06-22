@@ -40,3 +40,32 @@ test('Пользователь может зарегистрироваться, 
 	await expect(page.locator(`text=${adTitle}`)).toBeVisible({ timeout: 5000 });
 	await debugStep(page, 'ad-on-main');
 });
+
+test('валидация формы создания объявления', async ({ page }) => {
+	// Предполагается, что пользователь уже зарегистрирован и залогинен
+	await page.goto('http://localhost:5173/ads/create');
+
+	// Пустой заголовок
+	await page.locator('button:has-text("Создать")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// Слишком длинное описание
+	await page.locator('input[placeholder="Введите заголовок"]').fill('Тест');
+	await page.locator('textarea[placeholder="Введите описание"]').fill('a'.repeat(2000));
+	await page.locator('button:has-text("Создать")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// Невалидная цена
+	await page.locator('textarea[placeholder="Введите описание"]').fill('Описание');
+	await page.locator('input[placeholder="0"]').fill('-100');
+	await page.locator('button:has-text("Создать")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// XSS в заголовке
+	await page.locator('input[placeholder="Введите заголовок"]').fill('<script>alert(1)</script>');
+	await page.locator('input[placeholder="0"]').fill('100');
+	await page.locator('button:has-text("Создать")').click();
+	await expect(page.locator('.alert')).toBeVisible();
+
+	// TODO: Превышение лимита фото (если реализовано на фронте)
+});

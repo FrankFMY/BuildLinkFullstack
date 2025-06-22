@@ -1,5 +1,7 @@
 import { api } from '$lib/utils/api';
 import { authToken } from '$lib/stores/auth';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mock as MockType } from 'vitest';
 
 beforeEach(() => {
 	authToken.set(null);
@@ -8,7 +10,7 @@ beforeEach(() => {
 
 describe('api utils', () => {
 	it('get формирует правильный URL', async () => {
-		(fetch as any).mockResolvedValue({
+		(fetch as unknown as MockType).mockResolvedValue({
 			ok: true,
 			json: () => Promise.resolve({ data: 1 }),
 			status: 200
@@ -20,14 +22,20 @@ describe('api utils', () => {
 
 	it('подставляет токен авторизации', async () => {
 		authToken.set('jwt');
-		(fetch as any).mockResolvedValue({ ok: true, json: () => Promise.resolve({}), status: 200 });
+		(fetch as unknown as MockType).mockResolvedValue({
+			ok: true,
+			json: () => Promise.resolve({}),
+			status: 200
+		});
 		await api.get('/test');
-		const opts = (fetch as any).mock.calls[0][1];
+		const opts = (fetch as unknown as MockType).mock.calls[0][1] as {
+			headers: { Authorization: string };
+		};
 		expect(opts.headers.Authorization).toBe('Bearer jwt');
 	});
 
 	it('обрабатывает ошибку ответа', async () => {
-		(fetch as any).mockResolvedValue({
+		(fetch as unknown as MockType).mockResolvedValue({
 			ok: false,
 			status: 400,
 			json: () => Promise.resolve({ message: 'fail' })

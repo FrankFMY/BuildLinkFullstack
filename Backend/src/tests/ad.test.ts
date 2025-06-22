@@ -494,7 +494,7 @@ describe('Ads Endpoints', () => {
         expect(res.body[0].amount).toBe(10);
     });
 
-    it.only('можно загрузить и удалить фото объявления', async () => {
+    it('можно загрузить и удалить фото объявления', async () => {
         // Создаём объявление
         const adRes = await request(app)
             .post('/api/ads')

@@ -1,5 +1,6 @@
 import { authToken, user, isAuthenticated, logout } from '$lib/stores/auth';
 import { get } from 'svelte/store';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('auth store', () => {
 	beforeEach(() => {

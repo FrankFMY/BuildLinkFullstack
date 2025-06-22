@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import { AuthRequest } from '../types';
-import sanitizeHtml from 'sanitize-html';
+import { sanitizeString } from '../utils/validation';
 
 // Получить публичный профиль пользователя
 export const getUserProfile = asyncHandler(
@@ -66,10 +66,7 @@ export const updateMyProfile = asyncHandler(
                 let value = req.body[field];
                 // XSS-фильтрация для строк
                 if (typeof value === 'string') {
-                    value = sanitizeHtml(value, {
-                        allowedTags: [],
-                        allowedAttributes: {},
-                    });
+                    value = sanitizeString(value);
                 }
                 // Валидация длины
                 if (typeof value === 'string') {

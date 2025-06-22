@@ -1,0 +1,98 @@
+<script lang="ts">
+	import { onMount, onDestroy } from 'svelte';
+	import { user, authToken, logout } from '../stores/auth';
+	import AvatarUploader from './AvatarUploader.svelte';
+	import { get } from 'svelte/store';
+	import type { UserProfile } from '../stores/auth';
+
+	let open = false;
+	let menuRef: HTMLDivElement;
+	let currentUser: any = get(user); // any, чтобы не падать на avatar
+	let token = get(authToken);
+	let avatar: string | undefined;
+	$: avatar = currentUser?.avatar === null ? undefined : currentUser?.avatar;
+	$: avatarUrl = typeof avatar === 'string' && avatar ? avatar : undefined;
+
+	const unsub = user.subscribe((u) => (currentUser = u));
+	onDestroy(unsub);
+
+	function toggle() {
+		open = !open;
+	}
+	function close(e: MouseEvent) {
+		if (!menuRef.contains(e.target as Node)) open = false;
+	}
+	onMount(() => {
+		document.addEventListener('mousedown', close);
+		return () => document.removeEventListener('mousedown', close);
+	});
+
+	function onAvatarChange(e: CustomEvent<{ avatar: string }>) {
+		// Можно обновить user.avatar в store, если потребуется
+	}
+
+	function getAvatarUrl(): string | undefined {
+		return typeof currentUser?.avatar === 'string' && currentUser.avatar
+			? currentUser.avatar
+			: undefined;
+	}
+</script>
+
+<div class="user-menu" bind:this={menuRef}>
+	<button class="menu-btn" on:click={toggle} aria-haspopup="true" aria-expanded={open}>
+		{#if avatar}
+			<img class="avatar-mini" src={avatarUrl ?? ''} alt="avatar" />
+		{/if}
+		Привет, {currentUser?.username || '...'}
+	</button>
+	{#if open}
+		<div class="dropdown">
+			<div style="text-align:center; margin-bottom:0.5em;">
+				<AvatarUploader avatarUrl={avatarUrl ?? ''} {token} on:change={onAvatarChange} />
+			</div>
+			<hr />
+			<button on:click={logout} style="width:100%;">Выйти</button>
+		</div>
+	{/if}
+</div>
+
+<style>
+	.user-menu {
+		position: relative;
+		display: inline-block;
+	}
+	.menu-btn {
+		cursor: pointer;
+		padding: 0.5em 1em;
+		border-radius: 6px;
+		background: none;
+		border: none;
+		color: #fff;
+		font-weight: 500;
+	}
+	.dropdown {
+		position: absolute;
+		right: 0;
+		top: 2.5em;
+		background: #222;
+		color: #fff;
+		border-radius: 8px;
+		box-shadow: 0 2px 8px #0003;
+		min-width: 220px;
+		z-index: 100;
+		padding: 1em;
+	}
+	.dropdown hr {
+		margin: 0.7em 0;
+		border: none;
+		border-top: 1px solid #444;
+	}
+	.avatar-mini {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+		object-fit: cover;
+		margin-right: 0.5em;
+		vertical-align: middle;
+	}
+</style>

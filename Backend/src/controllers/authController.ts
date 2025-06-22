@@ -4,7 +4,12 @@ import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import { AuthRequest } from '../types';
-import sanitizeHtml from 'sanitize-html';
+import {
+    sanitizeString,
+    isValidEmail,
+    isValidUsername,
+    isValidPhone,
+} from '../utils/validation';
 
 const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
 
@@ -20,31 +25,23 @@ const generateToken = (id: string) => {
 export const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
         let { username, email, password, phone } = req.body;
-        // XSS-фильтрация
-        username = sanitizeHtml(username, {
-            allowedTags: [],
-            allowedAttributes: {},
-        });
-        email = sanitizeHtml(email, { allowedTags: [], allowedAttributes: {} });
-        phone = sanitizeHtml(phone, { allowedTags: [], allowedAttributes: {} });
+        username = sanitizeString(username);
+        email = sanitizeString(email);
+        phone = sanitizeString(phone);
 
-        // Валидация email
-        if (!email || !emailRegex.test(email)) {
+        if (!isValidEmail(email)) {
             res.status(400);
             throw new Error('Некорректный email');
         }
-        // Валидация username
-        if (!username || typeof username !== 'string' || username.length < 3) {
+        if (!isValidUsername(username)) {
             res.status(400);
             throw new Error('Некорректный username');
         }
-        // Валидация password
         if (!password || typeof password !== 'string' || password.length < 6) {
             res.status(400);
             throw new Error('Некорректный password');
         }
-        // Валидация phone
-        if (!phone || typeof phone !== 'string' || phone.length < 7) {
+        if (!isValidPhone(phone)) {
             res.status(400);
             throw new Error('Некорректный телефон');
         }
