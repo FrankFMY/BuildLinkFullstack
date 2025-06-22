@@ -12,7 +12,7 @@ export interface IUser extends Document {
     age?: number;
     timezone?: string;
     avatar?: string;
-    role?: 'client' | 'seller' | 'both';
+    phone: string;
 }
 
 export interface IAd extends Document {
@@ -23,6 +23,7 @@ export interface IAd extends Document {
     paymentType?: 'once' | 'day' | 'hour' | 'month';
     amount?: number;
     price?: number; // для обратной совместимости
+    photos?: string[];
 }
 
 export interface AuthRequest extends Request {

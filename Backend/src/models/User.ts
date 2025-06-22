@@ -34,10 +34,12 @@ const UserSchema: Schema = new Schema({
     age: { type: Number, min: 0, max: 120 },
     timezone: { type: String, trim: true, maxlength: 64 },
     avatar: { type: String, trim: true, maxlength: 256 },
-    role: {
+    phone: {
         type: String,
-        enum: ['client', 'seller', 'both'],
-        default: 'client',
+        required: true,
+        unique: true,
+        trim: true,
+        maxlength: 32,
     },
 });
 

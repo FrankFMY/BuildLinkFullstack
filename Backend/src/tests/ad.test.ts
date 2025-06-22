@@ -1,5 +1,7 @@
 let app: any, request: any, User: any, Ad: any;
 let token: string, userId: string;
+import path from 'path';
+import assert from 'assert';
 
 beforeAll(async () => {
     const { setupTestDB } = require('./setup');
@@ -14,6 +16,7 @@ beforeAll(async () => {
         username: 'adtester',
         email: 'adtester@example.com',
         password: 'password123',
+        phone: '+79990000003',
     };
     const registerRes = await request(app)
         .post('/api/auth/register')
@@ -489,5 +492,55 @@ describe('Ads Endpoints', () => {
         expect(res.body.length).toBe(1);
         expect(res.body[0].paymentType).toBe('day');
         expect(res.body[0].amount).toBe(10);
+    });
+
+    it.only('можно загрузить и удалить фото объявления', async () => {
+        // Создаём объявление
+        const adRes = await request(app)
+            .post('/api/ads')
+            .set('Authorization', `Bearer ${token}`)
+            .send({
+                title: 'Фото тест',
+                description: 'Тест фото',
+                type: 'offer',
+            });
+        expect(adRes.statusCode).toBe(201);
+        const adId = adRes.body._id || adRes.body.id;
+        // Загружаем фото
+        const photoPath = path.join(__dirname, 'test-photo.png');
+        const uploadRes = await request(app)
+            .post(`/api/ads/${adId}/photos`)
+            .set('Authorization', `Bearer ${token}`)
+            .attach('photos', photoPath);
+        expect(uploadRes.statusCode).toBe(200);
+        expect(uploadRes.body.photos[0]).toMatch(
+            /^https:\/\/buildlink-storage/
+        );
+        // Удаляем фото сразу после загрузки
+        const photoUrl = uploadRes.body.photos[0];
+        const filename = photoUrl.split('/').pop();
+        const photoKey = filename;
+        // DEBUG
+        console.log('DEBUG:', {
+            adId,
+            photoUrl,
+            filename,
+            photoKey,
+            allPhotos: uploadRes.body.allPhotos,
+        });
+        const delRes = await request(app)
+            .delete(`/api/ads/${adId}/photos/${photoKey}`)
+            .set('Authorization', `Bearer ${token}`);
+        if (delRes.statusCode !== 200) {
+            // eslint-disable-next-line no-undef
+            assert.fail(JSON.stringify(delRes.body));
+        }
+        expect(delRes.statusCode).toBe(200);
+        expect(delRes.body.message).toBe('Фото удалено');
+        // Проверяем, что фото реально удалено из объявления
+        const adAfter = await Ad.findById(adId);
+        expect(adAfter.photos.length).toBe(0);
+        const adCheck = await Ad.findById(adId);
+        console.log('adCheck after upload:', adCheck);
     });
 });

@@ -10,6 +10,7 @@ export interface IAd extends Document {
     author: Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
+    photos: string[];
 }
 
 const AdSchema: Schema = new Schema(
@@ -33,6 +34,11 @@ const AdSchema: Schema = new Schema(
             type: Schema.Types.ObjectId,
             required: true,
             ref: 'User',
+        },
+        photos: {
+            type: [String],
+            validate: [(arr: string[]) => arr.length <= 6, 'Максимум 6 фото'],
+            default: [],
         },
     },
     {

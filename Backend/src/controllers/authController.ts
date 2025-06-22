@@ -6,6 +6,8 @@ import User from '../models/User';
 import { AuthRequest } from '../types';
 import sanitizeHtml from 'sanitize-html';
 
+const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,}$/;
+
 const generateToken = (id: string) => {
     return jwt.sign({ id }, process.env.JWT_SECRET as string, {
         expiresIn: '30d',
@@ -17,16 +19,37 @@ const generateToken = (id: string) => {
 // @access  Public
 export const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
-        let { username, email, password } = req.body;
+        let { username, email, password, phone } = req.body;
         // XSS-фильтрация
         username = sanitizeHtml(username, {
             allowedTags: [],
             allowedAttributes: {},
         });
         email = sanitizeHtml(email, { allowedTags: [], allowedAttributes: {} });
+        phone = sanitizeHtml(phone, { allowedTags: [], allowedAttributes: {} });
 
-        const userExists = await User.findOne({ email });
+        // Валидация email
+        if (!email || !emailRegex.test(email)) {
+            res.status(400);
+            throw new Error('Некорректный email');
+        }
+        // Валидация username
+        if (!username || typeof username !== 'string' || username.length < 3) {
+            res.status(400);
+            throw new Error('Некорректный username');
+        }
+        // Валидация password
+        if (!password || typeof password !== 'string' || password.length < 6) {
+            res.status(400);
+            throw new Error('Некорректный password');
+        }
+        // Валидация phone
+        if (!phone || typeof phone !== 'string' || phone.length < 7) {
+            res.status(400);
+            throw new Error('Некорректный телефон');
+        }
 
+        const userExists = await User.findOne({ $or: [{ email }, { phone }] });
         if (userExists) {
             res.status(400);
             throw new Error('User already exists');
@@ -36,6 +59,7 @@ export const registerUser = asyncHandler(
             username,
             email,
             password,
+            phone,
         });
 
         if (user) {
@@ -43,6 +67,7 @@ export const registerUser = asyncHandler(
                 _id: user.id,
                 username: user.username,
                 email: user.email,
+                phone: user.phone,
                 token: generateToken(user.id),
             });
         } else {

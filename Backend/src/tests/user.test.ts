@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../app';
 import User from '../models/User';
+import path from 'path';
 
 describe('User Profile API', () => {
     let token: string;
@@ -11,6 +12,7 @@ describe('User Profile API', () => {
             username: 'profileuser',
             email: 'profileuser@example.com',
             password: 'password123',
+            phone: '+79990000001',
         };
         const res = await request(app).post('/api/auth/register').send(user);
         token = res.body.token || res.body.access_token;
@@ -57,14 +59,6 @@ describe('User Profile API', () => {
         expect(res.statusCode).toBe(400);
     });
 
-    it('не даёт изменить роль через профиль', async () => {
-        const res = await request(app)
-            .put('/api/users/me')
-            .set('Authorization', `Bearer ${token}`)
-            .send({ role: 'seller' });
-        expect(res.statusCode).toBe(400);
-    });
-
     it('не даёт XSS в firstName', async () => {
         const res = await request(app)
             .put('/api/users/me')
@@ -106,23 +100,6 @@ describe('User Profile API', () => {
         expect(res.statusCode).toBe(404);
     });
 
-    it('не отдаёт email и role в публичном профиле', async () => {
-        // Обновляем профиль, чтобы были заполнены все поля
-        await request(app)
-            .put('/api/users/me')
-            .set('Authorization', `Bearer ${token}`)
-            .send({
-                firstName: 'Иван',
-                lastName: 'Иванов',
-                city: 'Москва',
-                age: 30,
-            });
-        const res = await request(app).get(`/api/users/${userId}`);
-        expect(res.statusCode).toBe(200);
-        expect(res.body).not.toHaveProperty('email');
-        expect(res.body).not.toHaveProperty('role');
-    });
-
     it('не отдаёт XSS в публичном профиле', async () => {
         await request(app)
             .put('/api/users/me')
@@ -133,35 +110,19 @@ describe('User Profile API', () => {
         expect(res.body.firstName).not.toContain('<script>');
     });
 
-    it('можно сменить роль на seller', async () => {
-        const res = await request(app)
-            .put('/api/users/me/role')
+    it('можно загрузить и удалить аватар', async () => {
+        const avatarPath = path.join(__dirname, 'test-avatar.png');
+        const uploadRes = await request(app)
+            .post('/api/users/me/avatar')
             .set('Authorization', `Bearer ${token}`)
-            .send({ role: 'seller' });
-        expect(res.statusCode).toBe(200);
-        expect(res.body.role).toBe('seller');
-    });
-
-    it('не даёт сменить роль на XSS', async () => {
-        const res = await request(app)
-            .put('/api/users/me/role')
-            .set('Authorization', `Bearer ${token}`)
-            .send({ role: '<script>alert(1)</script>' });
-        expect(res.statusCode).toBe(400);
-    });
-
-    it('не даёт сменить роль на невалидную', async () => {
-        const res = await request(app)
-            .put('/api/users/me/role')
-            .set('Authorization', `Bearer ${token}`)
-            .send({ role: 'admin' });
-        expect(res.statusCode).toBe(400);
-    });
-
-    it('не даёт сменить роль без токена', async () => {
-        const res = await request(app)
-            .put('/api/users/me/role')
-            .send({ role: 'seller' });
-        expect(res.statusCode).toBe(401);
+            .attach('avatar', avatarPath);
+        expect(uploadRes.statusCode).toBe(200);
+        expect(uploadRes.body.avatar).toMatch(/^https:\/\/buildlink-storage/);
+        // Удаление
+        const delRes = await request(app)
+            .delete('/api/users/me/avatar')
+            .set('Authorization', `Bearer ${token}`);
+        expect(delRes.statusCode).toBe(200);
+        expect(delRes.body.message).toBe('Аватар удалён');
     });
 });

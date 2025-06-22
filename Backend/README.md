@@ -113,3 +113,37 @@ Swagger UI: [http://localhost:8000/api-docs](http://localhost:8000/api-docs)
 -   express-rate-limit: ограничение частоты запросов
 -   sanitize-html: защита от XSS
 -   CORS: только http://localhost:5173
+
+## Интеграция с Yandex.Cloud Object Storage (S3)
+
+Для хранения аватаров и фото объявлений используется S3-совместимое хранилище (Yandex.Cloud Object Storage).
+
+### Переменные окружения (добавьте в .env):
+
+```
+YC_REGION=ru-central1
+YC_ENDPOINT=https://storage.yandexcloud.net
+YC_KEY_ID=your_key_id
+YC_SECRET=your_secret
+YC_BUCKET=buildlink-storage
+```
+
+### Эндпоинты для фото:
+
+-   `POST /api/users/me/avatar` — загрузить/заменить аватар (multipart/form-data, поле avatar)
+-   `DELETE /api/users/me/avatar` — удалить аватар
+-   `POST /api/ads/:id/photos` — загрузить фото для объявления (до 6, поле photos[])
+-   `DELETE /api/ads/:id/photos/:photoKey` — удалить фото объявления
+
+**Ограничения:**
+
+-   Максимум 6 фото на объявление
+-   Размер файла до 5 МБ
+-   Только изображения (webp/png/jpg)
+-   Оптимизация и конвертация в webp (sharp)
+
+**Безопасность:**
+
+-   Все ключи и секреты — только через .env
+-   Проверка авторства при удалении фото
+-   Валидация формата и размера

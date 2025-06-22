@@ -98,23 +98,3 @@ export const updateMyProfile = asyncHandler(
         res.json({ message: 'Профиль обновлён', user });
     }
 );
-
-// Сменить свою роль
-export const updateMyRole = asyncHandler(
-    async (req: AuthRequest, res: Response) => {
-        const user = await User.findById(req.user?.id);
-        if (!user) {
-            res.status(404);
-            throw new Error('Пользователь не найден');
-        }
-        let { role } = req.body;
-        role = sanitizeHtml(role, { allowedTags: [], allowedAttributes: {} });
-        if (!['client', 'seller', 'both'].includes(role)) {
-            res.status(400);
-            throw new Error('Некорректная роль');
-        }
-        user.role = role;
-        await user.save();
-        res.json({ message: 'Роль обновлена', role: user.role });
-    }
-);

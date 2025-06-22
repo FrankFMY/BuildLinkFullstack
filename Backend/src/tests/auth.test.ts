@@ -8,6 +8,7 @@ describe('Auth Endpoints', () => {
         username: 'testuser',
         email: 'test@example.com',
         password: 'password123',
+        phone: '+79990000002',
     };
 
     it('should register a new user successfully', async () => {
@@ -100,25 +101,32 @@ describe('Auth Endpoints', () => {
     it('не регистрирует пользователя с некорректным email', async () => {
         const res = await request(app).post('/api/auth/register').send({
             username: 'user',
-            email: 'bademail',
+            email: 'notanemail',
             password: 'password123',
+            phone: '+79990009999',
         });
         expect(res.statusCode).toEqual(400);
         expect(res.body.message).toMatch(/email/i);
     });
 
     it('не регистрирует пользователя с коротким username', async () => {
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send({ username: 'a', email: 'a@b.c', password: 'password123' });
+        const res = await request(app).post('/api/auth/register').send({
+            username: 'a',
+            email: 'user@example.com',
+            password: 'password123',
+            phone: '+79990009999',
+        });
         expect(res.statusCode).toEqual(400);
         expect(res.body.message).toMatch(/username/i);
     });
 
     it('не регистрирует пользователя с коротким паролем', async () => {
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send({ username: 'user', email: 'user@b.c', password: '123' });
+        const res = await request(app).post('/api/auth/register').send({
+            username: 'user',
+            email: 'user@example.com',
+            password: '123',
+            phone: '+79990009999',
+        });
         expect(res.statusCode).toEqual(400);
         expect(res.body.message).toMatch(/password/i);
     });
@@ -153,13 +161,11 @@ describe('Auth Endpoints', () => {
     });
 
     it('не регистрирует пользователя с XSS в username', async () => {
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send({
-                username: '<script>alert(1)</script>',
-                email: 'xss@example.com',
-                password: 'password123',
-            });
+        const res = await request(app).post('/api/auth/register').send({
+            username: '<script>alert(1)</script>',
+            email: 'xss@example.com',
+            password: 'password123',
+        });
         // Ожидаем 400 или экранирование (зависит от политики)
         if (res.statusCode === 201) {
             expect(res.body.username).not.toContain('<script>');
@@ -169,13 +175,11 @@ describe('Auth Endpoints', () => {
     });
 
     it('не регистрирует пользователя с XSS в email', async () => {
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send({
-                username: 'xssuser',
-                email: '<script>alert(1)</script>',
-                password: 'password123',
-            });
+        const res = await request(app).post('/api/auth/register').send({
+            username: 'xssuser',
+            email: '<script>alert(1)</script>',
+            password: 'password123',
+        });
         expect([400, 422]).toContain(res.statusCode);
     });
 });
