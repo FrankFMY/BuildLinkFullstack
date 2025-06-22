@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { api } from '$lib/utils/api';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib/stores/auth';
+	import { get } from 'svelte/store';
 
 	let title = '';
 	let description = '';
@@ -8,6 +10,8 @@
 	let error = '';
 	let success = '';
 	let loading = false;
+	let amount: number | '' = 1;
+	let paymentType: 'once' | 'day' | 'hour' | 'month' = 'once';
 
 	async function createAd() {
 		error = '';
@@ -18,7 +22,19 @@
 		}
 		loading = true;
 		try {
-			await api.post('/api/ads', { title, description, price: price ? Number(price) : 0 });
+			const currentUser = get(user);
+			let type: 'request' | 'offer' = 'request';
+			if (currentUser?.role === 'seller') type = 'offer';
+			if (currentUser?.role === 'client') type = 'request';
+			if (currentUser?.role === 'both') type = 'offer'; // по умолчанию для both — offer
+			await api.post('/api/ads', {
+				title,
+				description,
+				price: price ? Number(price) : 0,
+				type,
+				amount: amount ? Number(amount) : 1,
+				paymentType
+			});
 			success = 'Объявление создано';
 			setTimeout(() => goto('/'), 1000);
 		} catch (e: any) {
@@ -66,6 +82,27 @@
 				min="0"
 				aria-label="Цена объявления"
 			/>
+		</label>
+		<label class="label">
+			<span class="label-text">Количество</span>
+			<input
+				class="input"
+				type="number"
+				bind:value={amount}
+				placeholder="1"
+				min="1"
+				required
+				aria-label="Количество"
+			/>
+		</label>
+		<label class="label">
+			<span class="label-text">Тип оплаты</span>
+			<select class="input" bind:value={paymentType} aria-label="Тип оплаты" required>
+				<option value="once">Разово</option>
+				<option value="day">В день</option>
+				<option value="hour">В час</option>
+				<option value="month">В месяц</option>
+			</select>
 		</label>
 
 		{#if error}

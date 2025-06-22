@@ -12,12 +12,17 @@ export interface IUser extends Document {
     age?: number;
     timezone?: string;
     avatar?: string;
+    role?: 'client' | 'seller' | 'both';
 }
 
 export interface IAd extends Document {
     title: string;
     description: string;
     author: Schema.Types.ObjectId | IUser;
+    type: 'request' | 'offer';
+    paymentType?: 'once' | 'day' | 'hour' | 'month';
+    amount?: number;
+    price?: number; // для обратной совместимости
 }
 
 export interface AuthRequest extends Request {

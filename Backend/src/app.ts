@@ -11,11 +11,12 @@ import swaggerUi from 'swagger-ui-express';
 const swaggerSpec = require('./swagger.js');
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
-// Connect to DB only if not in test environment
-if (process.env.NODE_ENV !== 'test') {
+// Connect to DB only if not in test environment and mongoose connection is not ready
+if (process.env.NODE_ENV !== 'test' && mongoose.connection.readyState < 1) {
     connectDB();
 }
 

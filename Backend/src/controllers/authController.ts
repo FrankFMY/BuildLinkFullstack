@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
 import User from '../models/User';
 import { AuthRequest } from '../types';
+import sanitizeHtml from 'sanitize-html';
 
 const generateToken = (id: string) => {
     return jwt.sign({ id }, process.env.JWT_SECRET as string, {
@@ -16,7 +17,13 @@ const generateToken = (id: string) => {
 // @access  Public
 export const registerUser = asyncHandler(
     async (req: Request, res: Response) => {
-        const { username, email, password } = req.body;
+        let { username, email, password } = req.body;
+        // XSS-фильтрация
+        username = sanitizeHtml(username, {
+            allowedTags: [],
+            allowedAttributes: {},
+        });
+        email = sanitizeHtml(email, { allowedTags: [], allowedAttributes: {} });
 
         const userExists = await User.findOne({ email });
 

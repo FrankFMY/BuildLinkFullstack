@@ -1,45 +1,42 @@
 import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
-// Define a setup test that logs in and saves the state
-test('authenticate', async ({ page }) => {
-	await page.goto('/register');
+// Utility: take screenshot and log URL + HTML
+async function debugStep(page: Page, name: string) {
+	await page.screenshot({ path: `${name}.png`, fullPage: true });
+	const html = await page.content();
+	console.log(`Current URL:`, await page.url());
+	console.log(`HTML (${name}):`, html.slice(0, 1000));
+}
+
+test('Пользователь может зарегистрироваться, войти и создать объявление', async ({ page }) => {
+	// Регистрация
+	await page.goto('http://localhost:5173/register');
+	await debugStep(page, 'register-page');
 	const user = `testuser_${Date.now()}`;
-	await page.locator('input[type="email"]').fill(`${user}@example.com`);
-	await page.locator('input[type="text"]').fill(user);
-	await page.locator('input[type="password"]').fill('password123');
+	await page.locator('input[placeholder="test@example.com"]').fill(`${user}@example.com`);
+	await page.locator('input[placeholder="username"]').fill(user);
+	await page.locator('input[placeholder="••••••••"]').fill('password123');
+	await debugStep(page, 'register-filled');
 	await page.locator('button:has-text("Зарегистрироваться")').click();
-	await page.waitForURL('/');
-	await page.context().storageState({ path: 'storageState.json' });
-});
+	await page.waitForURL('http://localhost:5173/');
+	await debugStep(page, 'after-register');
 
-test.describe('Ad Management Flow', () => {
-	// This will make all tests in this describe block run after the 'authenticate' test,
-	// and reuse the saved storage state.
-	test.use({ storageState: 'storageState.json' });
-
-	test('User can visit the main page while logged in', async ({ page }) => {
-		await page.goto('/');
-
-		// We know the user is logged in, so we should see the "Выйти" button
-		await expect(page.locator('button:has-text("Выйти")')).toBeVisible();
-
-		// The placeholder for the future ad creation test:
-		/*
-        const adTitle = `Test Ad ${Date.now()}`;
-        await page.goto('/ads/create');
-        await page.locator('input[name="title"]').fill(adTitle);
-        ...
-        await expect(page.locator(`div.card:has-text("${adTitle}")`)).toBeVisible();
-        */
-	});
-
-	test('User can create an ad', async ({ page }) => {
-		await page.goto('/ads/create');
-		const adTitle = `Test Ad ${Date.now()}`;
-		await page.locator('input[placeholder="Заголовок"]').fill(adTitle);
-		await page.locator('textarea[placeholder="Описание"]').fill('Описание для теста');
-		await page.locator('input[placeholder="Цена"]').fill('123');
-		await page.locator('button:has-text("Создать")').click();
-		await page.waitForSelector('text=Объявление создано');
-	});
+	// Создание объявления
+	await page.goto('http://localhost:5173/ads/create');
+	await debugStep(page, 'ad-create-page');
+	const adTitle = `Test Ad ${Date.now()}`;
+	await page.locator('input[placeholder="Введите заголовок"]').fill(adTitle);
+	await page.locator('textarea[placeholder="Введите описание"]').fill('Описание для теста');
+	await page.locator('input[placeholder="0"]').fill('123');
+	await page.locator('input[placeholder="1"]').fill('1');
+	await page.locator('select[aria-label="Тип оплаты"]').selectOption('once');
+	await debugStep(page, 'ad-filled');
+	await page.locator('button:has-text("Создать")').click();
+	await expect(page.locator('.alert')).toBeVisible({ timeout: 5000 });
+	await debugStep(page, 'after-alert');
+	await page.waitForURL('http://localhost:5173/', { timeout: 5000 });
+	await debugStep(page, 'after-redirect');
+	await expect(page.locator(`text=${adTitle}`)).toBeVisible({ timeout: 5000 });
+	await debugStep(page, 'ad-on-main');
 });

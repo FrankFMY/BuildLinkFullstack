@@ -125,36 +125,57 @@ describe('Auth Endpoints', () => {
 
     it('не регистрирует пользователя с очень длинным username', async () => {
         const longUsername = 'a'.repeat(100);
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send({
-                username: longUsername,
-                email: 'long@b.c',
-                password: 'password123',
-            });
+        const res = await request(app).post('/api/auth/register').send({
+            username: longUsername,
+            email: 'long@b.c',
+            password: 'password123',
+        });
         expect(res.statusCode).toBe(400);
     });
 
     it('не регистрирует пользователя с очень длинным email', async () => {
         const longEmail = 'a'.repeat(100) + '@b.c';
-        const res = await request(app)
-            .post('/api/auth/register')
-            .send({
-                username: 'user',
-                email: longEmail,
-                password: 'password123',
-            });
+        const res = await request(app).post('/api/auth/register').send({
+            username: 'user',
+            email: longEmail,
+            password: 'password123',
+        });
         expect(res.statusCode).toBe(400);
     });
 
     it('не регистрирует пользователя с email без @', async () => {
+        const res = await request(app).post('/api/auth/register').send({
+            username: 'user',
+            email: 'notanemail',
+            password: 'password123',
+        });
+        expect(res.statusCode).toBe(400);
+    });
+
+    it('не регистрирует пользователя с XSS в username', async () => {
         const res = await request(app)
             .post('/api/auth/register')
             .send({
-                username: 'user',
-                email: 'notanemail',
+                username: '<script>alert(1)</script>',
+                email: 'xss@example.com',
                 password: 'password123',
             });
-        expect(res.statusCode).toBe(400);
+        // Ожидаем 400 или экранирование (зависит от политики)
+        if (res.statusCode === 201) {
+            expect(res.body.username).not.toContain('<script>');
+        } else {
+            expect([400, 422]).toContain(res.statusCode);
+        }
+    });
+
+    it('не регистрирует пользователя с XSS в email', async () => {
+        const res = await request(app)
+            .post('/api/auth/register')
+            .send({
+                username: 'xssuser',
+                email: '<script>alert(1)</script>',
+                password: 'password123',
+            });
+        expect([400, 422]).toContain(res.statusCode);
     });
 });

@@ -34,6 +34,11 @@ const UserSchema: Schema = new Schema({
     age: { type: Number, min: 0, max: 120 },
     timezone: { type: String, trim: true, maxlength: 64 },
     avatar: { type: String, trim: true, maxlength: 256 },
+    role: {
+        type: String,
+        enum: ['client', 'seller', 'both'],
+        default: 'client',
+    },
 });
 
 // Hash password before saving
@@ -45,6 +50,8 @@ UserSchema.pre<IUser>('save', async function (next) {
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
+
+UserSchema.index({ role: 1 });
 
 const User = mongoose.model<IUser>('User', UserSchema);
 
