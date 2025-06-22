@@ -3,11 +3,19 @@ import type { Page } from '@playwright/test';
 
 // Utility: take screenshot and log URL + HTML
 async function debugStep(page: Page, name: string) {
+<<<<<<< HEAD
 	await page.screenshot({ path: `playwright-report/${name}.png`, fullPage: true });
+=======
+	await page.screenshot({ path: `${name}.png`, fullPage: true });
+	const html = await page.content();
+	console.log(`Current URL:`, await page.url());
+	console.log(`HTML (${name}):`, html.slice(0, 1000));
+>>>>>>> 1753bb79a3f92980ba2e1e275056c0235d9e2326
 }
 
 test('Пользователь может зарегистрироваться, войти и создать объявление', async ({ page }) => {
 	// Регистрация
+<<<<<<< HEAD
 	await page.goto('/register');
 	const user = `testuser_${Date.now()}`;
 	await page.getByLabel('Email').fill(`${user}@example.com`);
@@ -41,6 +49,35 @@ test('Пользователь может зарегистрироваться, 
 
 	await expect(page.getByRole('heading', { name: 'Объявления' })).toBeVisible({ timeout: 10000 });
 	await expect(page.locator(`article:has-text("${adTitle}")`)).toBeVisible();
+=======
+	await page.goto('http://localhost:5173/register');
+	await debugStep(page, 'register-page');
+	const user = `testuser_${Date.now()}`;
+	await page.locator('input[placeholder="test@example.com"]').fill(`${user}@example.com`);
+	await page.locator('input[placeholder="username"]').fill(user);
+	await page.locator('input[placeholder="••••••••"]').fill('password123');
+	await debugStep(page, 'register-filled');
+	await page.locator('button:has-text("Зарегистрироваться")').click();
+	await page.waitForURL('http://localhost:5173/');
+	await debugStep(page, 'after-register');
+
+	// Создание объявления
+	await page.goto('http://localhost:5173/ads/create');
+	await debugStep(page, 'ad-create-page');
+	const adTitle = `Test Ad ${Date.now()}`;
+	await page.locator('input[placeholder="Введите заголовок"]').fill(adTitle);
+	await page.locator('textarea[placeholder="Введите описание"]').fill('Описание для теста');
+	await page.locator('input[placeholder="0"]').fill('123');
+	await page.locator('input[placeholder="1"]').fill('1');
+	await page.locator('select[aria-label="Тип оплаты"]').selectOption('once');
+	await debugStep(page, 'ad-filled');
+	await page.locator('button:has-text("Создать")').click();
+	await expect(page.locator('.alert')).toBeVisible({ timeout: 5000 });
+	await debugStep(page, 'after-alert');
+	await page.waitForURL('http://localhost:5173/', { timeout: 5000 });
+	await debugStep(page, 'after-redirect');
+	await expect(page.locator(`text=${adTitle}`)).toBeVisible({ timeout: 5000 });
+>>>>>>> 1753bb79a3f92980ba2e1e275056c0235d9e2326
 	await debugStep(page, 'ad-on-main');
 });
 

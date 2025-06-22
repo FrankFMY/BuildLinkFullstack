@@ -9,4 +9,3 @@ module.exports = {
     setupFilesAfterEnv: ['<rootDir>/src/tests/test-db-init.ts'],
     testTimeout: 30000,
 };
-

@@ -8,7 +8,10 @@ describe('User Profile API', () => {
     let userId: string;
 
     beforeEach(async () => {
+<<<<<<< HEAD
         await User.deleteMany({});
+=======
+>>>>>>> 1753bb79a3f92980ba2e1e275056c0235d9e2326
         const user = {
             username: 'profileuser',
             email: 'profileuser@example.com',
@@ -119,13 +122,17 @@ describe('User Profile API', () => {
             .attach('avatar', avatarPath);
         expect(uploadRes.statusCode).toBe(200);
         expect(uploadRes.body.avatar).toMatch(/^https:\/\/buildlink-storage/);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1753bb79a3f92980ba2e1e275056c0235d9e2326
         // Удаление
         const delRes = await request(app)
             .delete('/api/users/me/avatar')
             .set('Authorization', `Bearer ${token}`);
         expect(delRes.statusCode).toBe(200);
         expect(delRes.body.message).toBe('Аватар удалён');
+<<<<<<< HEAD
 
         const userAfterDelete = await User.findById(userId);
         expect(userAfterDelete).not.toBeNull();
@@ -133,3 +140,7 @@ describe('User Profile API', () => {
     });
 });
 
+=======
+    });
+});
+>>>>>>> 1753bb79a3f92980ba2e1e275056c0235d9e2326
