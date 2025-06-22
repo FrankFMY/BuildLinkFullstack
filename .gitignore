@@ -1,0 +1,39 @@
+# Dependencies
+**/node_modules
+**/pnpm-lock.yaml
+/.pnp
+.pnp.js
+
+# Testing
+**/coverage
+**/test-results/
+storageState.json
+
+# Production
+**/build
+**/dist
+**/.svelte-kit/
+
+# Misc
+.DS_Store
+*.pem
+*.log
+
+# Environment variables
+.env
+.env*
+!.env.example
+
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+.history/* 
