@@ -10,6 +10,7 @@
 		description: string;
 		price: number;
 		author: string;
+		authorId: string;
 		created_at: string;
 	}
 
@@ -26,6 +27,7 @@
 				description: ad.description,
 				price: ad.price ?? 0,
 				author: ad.author?.username || ad.author || '—',
+				authorId: ad.author?._id || ad.authorId || '',
 				created_at: ad.createdAt || ad.created_at || ''
 			}));
 		} catch (e: any) {
@@ -59,10 +61,24 @@
 					<p class="text-sm text-surface-500 flex-grow">{ad.description}</p>
 					<div class="flex justify-between items-center mt-2">
 						<span class="font-bold text-lg">{ad.price.toLocaleString('ru-RU')} ₽</span>
-						<span class="text-xs text-surface-400">@{ad.author}</span>
+						<a class="author-link text-xs text-surface-400" href={`/profile/${ad.authorId}`}
+							>@{ad.author}</a
+						>
 					</div>
 				</div>
 			{/each}
 		</div>
 	{/if}
 </div>
+
+<style>
+	.author-link {
+		color: #aaa;
+		text-decoration: underline;
+		cursor: pointer;
+		transition: color 0.2s;
+	}
+	.author-link:hover {
+		color: #fff;
+	}
+</style>

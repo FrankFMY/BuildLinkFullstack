@@ -1,6 +1,6 @@
 # BuildLinkFullstack
 
-Моно-репозиторий для fullstack-проекта BuildLink: современный сервис объявлений с авторизацией, CRUD, поиском и тестами.
+Моно-репозиторий для fullstack-проекта BuildLink: современный сервис объявлений с авторизацией, CRUD, поиском, тестами и современным UX.
 
 ---
 
@@ -8,10 +8,20 @@
 
 BuildLink — учебно-боевой pet-проект для демонстрации лучших практик Node.js/Express, SvelteKit, MongoDB, TypeScript, E2E и unit-тестирования. Подходит как основа для реальных сервисов.
 
+## Что нового
+
+-   Просмотр чужого профиля по клику на ник (роут `/profile/[id]`)
+-   Кликабельные ники пользователей в объявлениях
+-   Современная сетка объявлений, адаптивный дизайн
+-   Загрузка до 6 фото к объявлению, drag&drop, предпросмотр
+-   Автоматическая синхронизация swagger-типов между backend и frontend
+-   Улучшенный UX: быстрый переход между профилями, отдельные блоки для профиля и объявлений
+-   Актуальные тесты (unit, e2e), строгий ESLint/Prettier
+
 ## Архитектура
 
--   **Backend**: REST API на Express + MongoDB, JWT-аутентификация, валидация, тесты (Jest, Supertest)
--   **Frontend**: SvelteKit, TailwindCSS, Playwright E2E, современный UI/UX
+-   **Backend**: REST API на Express + MongoDB, JWT-аутентификация, валидация, тесты (Jest, Supertest), Swagger
+-   **Frontend**: SvelteKit, TailwindCSS, Playwright E2E, современный UI/UX, drag&drop загрузка фото
 -   **Моно-репозиторий**: единый git, единые правила оформления, строгий ESLint/Prettier
 
 ```mermaid
@@ -28,6 +38,8 @@ graph TD;
 -   Поиск и фильтрация
 -   Защита API, валидация, обработка ошибок
 -   E2E и unit-тесты, CI-ready
+-   Просмотр чужого профиля и его объявлений
+-   Загрузка/удаление аватара и фото объявлений (до 6)
 
 ## Технологии
 
@@ -46,7 +58,7 @@ cd Backend && npm install
 cd ../Svelte && npm install
 ```
 
-Подробности — в README модулей:
+Подробнее — в README модулей:
 
 -   [Backend/README.md](./Backend/README.md)
 -   [Svelte/README.md](./Svelte/README.md)
