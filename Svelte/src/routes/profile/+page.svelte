@@ -33,7 +33,7 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await api.get('/api/ads', token);
+			const res = await api.get(`/api/ads?author=${currentUser.id}`, token);
 			ads = (res || [])
 				.map((ad: any) => ({
 					id: ad._id || ad.id,
@@ -102,32 +102,28 @@
 			>
 		</div>
 	</div>
-	<div class="ads-list">
-		<h3>Мои объявления</h3>
-		<button class="btn btn-sm variant-filled" on:click={openCreateAd}>Добавить объявление</button>
-		{#if loading}
-			<div>Загрузка...</div>
-		{:else if error}
-			<div class="error">{error}</div>
-			<pre>{JSON.stringify(currentUser, null, 2)}</pre>
-			<pre>{JSON.stringify(ads, null, 2)}</pre>
-		{:else if !currentUser?.id}
-			<div>Пользователь не определён</div>
-			<pre>{JSON.stringify(currentUser, null, 2)}</pre>
-			<pre>{JSON.stringify(ads, null, 2)}</pre>
-		{:else if ads.length === 0}
-			<div>Нет объявлений</div>
-			<pre>{JSON.stringify(currentUser, null, 2)}</pre>
-			<pre>{JSON.stringify(ads, null, 2)}</pre>
-		{:else}
+</div>
+
+<div class="ads-section">
+	<h3>Мои объявления</h3>
+	<button class="btn btn-sm variant-filled" on:click={openCreateAd}>Добавить объявление</button>
+	{#if loading}
+		<div>Загрузка...</div>
+	{:else if error}
+		<div class="error">{error}</div>
+	{:else if ads.length === 0}
+		<div>Нет объявлений</div>
+	{:else}
+		<div class="ads-grid">
 			{#each ads as ad}
-				<div class="ad-card">
-					<div>
-						<b>{ad.title}</b>
-						<span style="color:#aaa;">{new Date(ad.created_at).toLocaleString()}</span>
+				<div class="card p-4 shadow-md flex flex-col gap-2">
+					<h2 class="h4">{ad.title}</h2>
+					<p class="text-sm text-surface-500 flex-grow">{ad.description}</p>
+					<div class="flex justify-between items-center mt-2">
+						<span class="font-bold text-lg">{ad.price.toLocaleString('ru-RU')} ₽</span>
+						<span class="text-xs text-surface-400">{new Date(ad.created_at).toLocaleString()}</span>
 					</div>
-					<div>{ad.description}</div>
-					<div class="ad-actions">
+					<div class="ad-actions mt-2">
 						<button class="btn btn-xs" on:click={() => openEditAd(ad)}>Редактировать</button>
 						<button class="btn btn-xs variant-filled-error" on:click={() => deleteAd(ad.id)}
 							>Удалить</button
@@ -135,30 +131,30 @@
 					</div>
 				</div>
 			{/each}
-		{/if}
-		{#if showAdModal}
-			<div
-				class="modal-backdrop"
-				role="button"
-				tabindex="0"
-				on:click={closeAdModal}
-				on:keydown={(e) => {
-					if (e.key === 'Enter' || e.key === ' ') closeAdModal();
-				}}
-			></div>
-			<div class="modal">
-				<h4>{editAd ? 'Редактировать объявление' : 'Новое объявление'}</h4>
-				<!-- TODO: форма создания/редактирования объявления -->
-				<button class="btn" on:click={closeAdModal}>Закрыть</button>
-			</div>
-		{/if}
-	</div>
+		</div>
+	{/if}
+	{#if showAdModal}
+		<div
+			class="modal-backdrop"
+			role="button"
+			tabindex="0"
+			on:click={closeAdModal}
+			on:keydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') closeAdModal();
+			}}
+		></div>
+		<div class="modal">
+			<h4>{editAd ? 'Редактировать объявление' : 'Новое объявление'}</h4>
+			<!-- TODO: форма создания/редактирования объявления -->
+			<button class="btn" on:click={closeAdModal}>Закрыть</button>
+		</div>
+	{/if}
 </div>
 
 <style>
 	.profile {
 		max-width: 600px;
-		margin: 2rem auto;
+		margin: 2rem auto 0 auto;
 		background: #23223a;
 		border-radius: 12px;
 		padding: 2rem;
@@ -172,14 +168,38 @@
 	.user-info {
 		flex: 1;
 	}
-	.ads-list {
-		margin-top: 2rem;
+	.ads-section {
+		max-width: 900px;
+		margin: 2rem auto;
+		background: #23223a;
+		border-radius: 12px;
+		padding: 2rem;
+		box-shadow: 0 2px 12px #0002;
 	}
-	.ad-card {
+	.ads-grid {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+	}
+	@media (min-width: 700px) {
+		.ads-grid {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+	@media (min-width: 1100px) {
+		.ads-grid {
+			grid-template-columns: 1fr 1fr 1fr;
+		}
+	}
+	.card {
 		background: #181828;
 		border-radius: 8px;
 		padding: 1rem;
-		margin-bottom: 1rem;
+	}
+	.ad-actions {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
 	}
 	.settings-btn {
 		margin-top: 1rem;
@@ -193,10 +213,14 @@
 		text-align: center;
 		font-size: 1.1em;
 	}
-	.ad-actions {
-		display: flex;
-		gap: 0.5rem;
-		margin-top: 0.5rem;
+	.error {
+		background: #c62828;
+		color: #fff;
+		padding: 0.5rem 1rem;
+		border-radius: 6px;
+		margin-bottom: 1rem;
+		text-align: center;
+		font-size: 1.1em;
 	}
 	.modal-backdrop {
 		position: fixed;
