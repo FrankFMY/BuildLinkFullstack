@@ -9,6 +9,7 @@
 	let preview: string = avatarUrl ?? '';
 	let loading = false;
 	let error = '';
+	let hover = false;
 
 	// Drag&drop
 	function onDrop(e: DragEvent) {
@@ -91,31 +92,32 @@
 
 <div class="avatar-uploader">
 	{#if preview}
-		<img class="preview" src={preview} alt="avatar preview" />
-		<button on:click={remove} disabled={loading}>Удалить</button>
+		<div
+			class="avatar-wrapper"
+			on:mouseenter={() => (hover = true)}
+			on:mouseleave={() => (hover = false)}
+		>
+			<img class="preview" src={preview} alt="avatar preview" />
+			{#if hover}
+				<div class="overlay" on:click={() => fileInput.click()}>
+					<span>Сменить фото</span>
+				</div>
+			{/if}
+			<button class="delete-btn" on:click={remove} disabled={loading} title="Удалить фото">✕</button
+			>
+		</div>
+	{:else}
+		<button class="upload-btn" on:click={() => fileInput.click()} disabled={loading}>
+			Загрузить фото
+		</button>
 	{/if}
-	<div
-		class="dropzone"
-		on:drop={onDrop}
-		on:dragover={onDragOver}
-		on:click={() => fileInput.click()}
-		on:keydown={(e) => {
-			if (e.key === 'Enter' || e.key === ' ') fileInput.click();
-		}}
-		role="button"
-		tabindex="0"
-	>
-		{#if !preview}
-			<span>Перетащите файл или выберите...</span>
-		{/if}
-		<input
-			type="file"
-			accept="image/*"
-			bind:this={fileInput}
-			style="display:none"
-			on:change={handleInputChange}
-		/>
-	</div>
+	<input
+		type="file"
+		accept="image/*"
+		bind:this={fileInput}
+		style="display:none"
+		on:change={handleInputChange}
+	/>
 	{#if error}
 		<div class="error">{error}</div>
 	{/if}
@@ -131,19 +133,76 @@
 		align-items: center;
 		gap: 1rem;
 	}
+	.avatar-wrapper {
+		position: relative;
+		display: inline-block;
+	}
 	.preview {
 		width: 128px;
 		height: 128px;
 		border-radius: 50%;
 		object-fit: cover;
 		border: 2px solid #ddd;
+		transition: filter 0.2s;
 	}
-	.dropzone {
-		border: 2px dashed #aaa;
-		padding: 1rem;
-		border-radius: 8px;
+	.overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0, 0, 0, 0.5);
+		color: #fff;
+		font-size: 1.1em;
+		border-radius: 50%;
 		cursor: pointer;
-		text-align: center;
+		transition: background 0.2s;
+	}
+	.avatar-wrapper:hover .preview {
+		filter: brightness(0.6);
+	}
+	.upload-btn {
+		width: 128px;
+		height: 128px;
+		border-radius: 50%;
+		border: 2px dashed #aaa;
+		background: #23223a;
+		color: #fff;
+		font-size: 1em;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition:
+			background 0.2s,
+			color 0.2s;
+	}
+	.upload-btn:hover {
+		background: #181828;
+		color: #e0e0e0;
+	}
+	.delete-btn {
+		position: absolute;
+		top: 6px;
+		right: 6px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		border: none;
+		border-radius: 50%;
+		width: 28px;
+		height: 28px;
+		font-size: 1.1em;
+		cursor: pointer;
+		z-index: 2;
+		transition: background 0.2s;
+		opacity: 0.8;
+	}
+	.delete-btn:hover {
+		background: #e00;
+		opacity: 1;
 	}
 	.error {
 		color: #e00;

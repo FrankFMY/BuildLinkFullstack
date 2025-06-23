@@ -51,6 +51,10 @@
 				/>
 			</div>
 			<hr />
+			<button
+				on:click={() => (window.location.href = '/profile')}
+				style="width:100%; margin-bottom:0.5em;">Профиль</button
+			>
 			<button on:click={logout} style="width:100%;">Выйти</button>
 		</div>
 	{/if}
