@@ -44,13 +44,11 @@
 	{#if open}
 		<div class="dropdown">
 			<div style="text-align:center; margin-bottom:0.5em;">
-				<!-- 
-					Known Issue (TypeScript/Svelte Artifact):
-					The type checker incorrectly flags the 'avatarUrl' prop.
-					The error is suppressed to allow compilation.
-				-->
-				<!-- svelte-ignore ts(2322) -->
-				<AvatarUploader avatarUrl={currentUser?.avatar} {token} on:change={onAvatarChange} />
+				<AvatarUploader
+					avatarUrl={currentUser?.avatar}
+					token={token ?? undefined}
+					on:change={onAvatarChange}
+				/>
 			</div>
 			<hr />
 			<button on:click={logout} style="width:100%;">Выйти</button>
@@ -71,6 +69,8 @@
 		border: none;
 		color: #fff;
 		font-weight: 500;
+		display: flex;
+		align-items: center;
 	}
 	.dropdown {
 		position: absolute;
