@@ -1,35 +1,59 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { user, authToken } from '$lib/stores/auth';
 	import { api } from '$lib/utils/api';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import { get } from 'svelte/store';
 
-	let currentUser = get(user);
+	let currentUser: any = null;
 	let token: string | undefined = get(authToken) || undefined;
 	let ads: any[] = [];
-	let loading = true;
+	let loading = false;
 	let error = '';
 	let successMsg = '';
+	let showAdModal = false;
+	let editAd: any = null;
 
-	onMount(async () => {
-		if (!currentUser?.id) {
-			error = 'Пользователь не определён';
-			loading = false;
-			return;
-		}
+	const unsubscribe = user.subscribe((u) => {
+		currentUser = u;
+	});
+	onDestroy(unsubscribe);
+
+	$: if (currentUser && currentUser._id && !currentUser.id) {
+		currentUser.id = currentUser._id;
+	}
+
+	$: if (currentUser && currentUser.id) {
+		loadAds();
+	}
+
+	let adsLoadedForUser = '';
+	async function loadAds() {
+		if (adsLoadedForUser === currentUser.id) return;
+		loading = true;
+		error = '';
 		try {
-			// Получаем свои объявления
-			const res = await api.get(`/ads?author=${currentUser.id}`, token);
-			ads = (res || []).sort(
-				(a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-			);
+			const res = await api.get('/api/ads', token);
+			ads = (res || [])
+				.map((ad: any) => ({
+					id: ad._id || ad.id,
+					title: ad.title,
+					description: ad.description,
+					price: ad.price ?? 0,
+					author: ad.author?.username || ad.author || '—',
+					created_at: ad.createdAt || ad.created_at || ''
+				}))
+				.sort(
+					(a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+				);
+			adsLoadedForUser = currentUser.id;
 		} catch (e: any) {
 			error = e?.data?.error || e?.data?.message || e?.message || 'Ошибка';
+			console.error('ads error:', e);
 		} finally {
 			loading = false;
 		}
-	});
+	}
 
 	function onAvatarChange(e: CustomEvent<{ avatar: string }>) {
 		if (!currentUser) return;
@@ -41,6 +65,23 @@
 
 	function goToSettings() {
 		window.location.href = '/profile/settings';
+	}
+
+	function openCreateAd() {
+		editAd = null;
+		showAdModal = true;
+	}
+	function openEditAd(ad: any) {
+		editAd = ad;
+		showAdModal = true;
+	}
+	function closeAdModal() {
+		showAdModal = false;
+		editAd = null;
+	}
+	function deleteAd(adId: string) {
+		// TODO: реализовать удаление через API
+		alert('Удаление объявления: ' + adId);
 	}
 </script>
 
@@ -63,22 +104,53 @@
 	</div>
 	<div class="ads-list">
 		<h3>Мои объявления</h3>
+		<button class="btn btn-sm variant-filled" on:click={openCreateAd}>Добавить объявление</button>
 		{#if loading}
 			<div>Загрузка...</div>
 		{:else if error}
 			<div class="error">{error}</div>
+			<pre>{JSON.stringify(currentUser, null, 2)}</pre>
+			<pre>{JSON.stringify(ads, null, 2)}</pre>
+		{:else if !currentUser?.id}
+			<div>Пользователь не определён</div>
+			<pre>{JSON.stringify(currentUser, null, 2)}</pre>
+			<pre>{JSON.stringify(ads, null, 2)}</pre>
 		{:else if ads.length === 0}
 			<div>Нет объявлений</div>
+			<pre>{JSON.stringify(currentUser, null, 2)}</pre>
+			<pre>{JSON.stringify(ads, null, 2)}</pre>
 		{:else}
 			{#each ads as ad}
 				<div class="ad-card">
 					<div>
 						<b>{ad.title}</b>
-						<span style="color:#aaa;">{new Date(ad.createdAt).toLocaleString()}</span>
+						<span style="color:#aaa;">{new Date(ad.created_at).toLocaleString()}</span>
 					</div>
 					<div>{ad.description}</div>
+					<div class="ad-actions">
+						<button class="btn btn-xs" on:click={() => openEditAd(ad)}>Редактировать</button>
+						<button class="btn btn-xs variant-filled-error" on:click={() => deleteAd(ad.id)}
+							>Удалить</button
+						>
+					</div>
 				</div>
 			{/each}
+		{/if}
+		{#if showAdModal}
+			<div
+				class="modal-backdrop"
+				role="button"
+				tabindex="0"
+				on:click={closeAdModal}
+				on:keydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') closeAdModal();
+				}}
+			></div>
+			<div class="modal">
+				<h4>{editAd ? 'Редактировать объявление' : 'Новое объявление'}</h4>
+				<!-- TODO: форма создания/редактирования объявления -->
+				<button class="btn" on:click={closeAdModal}>Закрыть</button>
+			</div>
 		{/if}
 	</div>
 </div>
@@ -120,5 +192,31 @@
 		margin-bottom: 1rem;
 		text-align: center;
 		font-size: 1.1em;
+	}
+	.ad-actions {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+	}
+	.modal-backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background: rgba(0, 0, 0, 0.5);
+		z-index: 1000;
+	}
+	.modal {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background: #23223a;
+		padding: 2rem;
+		border-radius: 12px;
+		z-index: 1001;
+		min-width: 320px;
+		max-width: 90vw;
 	}
 </style>
