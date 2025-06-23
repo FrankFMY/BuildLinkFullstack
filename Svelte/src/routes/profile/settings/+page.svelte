@@ -6,6 +6,31 @@
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import IMask from 'imask';
 	import { onMount } from 'svelte';
+	import cityTimezones from 'city-timezones';
+
+	// Список российских городов с таймзонами
+	const russianCities = [
+		{ city: 'Москва', timezone: 'GMT+3' },
+		{ city: 'Санкт-Петербург', timezone: 'GMT+3' },
+		{ city: 'Новосибирск', timezone: 'GMT+7' },
+		{ city: 'Екатеринбург', timezone: 'GMT+5' },
+		{ city: 'Казань', timezone: 'GMT+3' },
+		{ city: 'Нижний Новгород', timezone: 'GMT+3' },
+		{ city: 'Челябинск', timezone: 'GMT+5' },
+		{ city: 'Самара', timezone: 'GMT+4' },
+		{ city: 'Омск', timezone: 'GMT+6' },
+		{ city: 'Ростов-на-Дону', timezone: 'GMT+3' },
+		{ city: 'Уфа', timezone: 'GMT+5' },
+		{ city: 'Красноярск', timezone: 'GMT+7' },
+		{ city: 'Воронеж', timezone: 'GMT+3' },
+		{ city: 'Пермь', timezone: 'GMT+5' },
+		{ city: 'Волгоград', timezone: 'GMT+3' },
+		{ city: 'Саратов', timezone: 'GMT+4' },
+		{ city: 'Владивосток', timezone: 'GMT+10' },
+		{ city: 'Калининград', timezone: 'GMT+2' },
+		{ city: 'Иркутск', timezone: 'GMT+8' },
+		{ city: 'Хабаровск', timezone: 'GMT+10' }
+	];
 
 	let currentUser = get(userStore);
 	let firstName = currentUser?.firstName || '';
@@ -20,17 +45,9 @@
 	let loading = false;
 	let phoneInput: HTMLInputElement;
 	let mask: any;
-
-	// Пример мапы город-таймзона (можно расширить)
-	const cityTimezones: Record<string, string> = {
-		Москва: 'Europe/Moscow',
-		'Санкт-Петербург': 'Europe/Moscow',
-		Саратов: 'Europe/Saratov',
-		Новосибирск: 'Asia/Novosibirsk',
-		Екатеринбург: 'Asia/Yekaterinburg',
-		Калининград: 'Europe/Kaliningrad',
-		Владивосток: 'Asia/Vladivostok'
-	};
+	let cityQuery = '';
+	let citySuggestions = russianCities;
+	let showSuggestions = false;
 
 	const timezones = [
 		'Europe/Moscow',
@@ -45,28 +62,6 @@
 		'Asia/Magadan',
 		'Asia/Kamchatka'
 	];
-
-	function updateTimezoneByCity() {
-		if (city && cityTimezones[city]) {
-			timezone = cityTimezones[city];
-		}
-	}
-
-	$: updateTimezoneByCity();
-
-	onMount(() => {
-		if (phoneInput) {
-			mask = IMask(phoneInput, {
-				mask: '+{7} (000) 000-00-00',
-				lazy: true,
-				overwrite: true
-			});
-			mask.on('accept', () => {
-				phone = mask.value;
-			});
-			if (phone) mask.value = phone;
-		}
-	});
 
 	function handlePhoneInput(e: Event) {
 		phone = (e.target as HTMLInputElement).value;
@@ -121,6 +116,39 @@
 	function handleCancel() {
 		goto('/profile');
 	}
+
+	function onCityInput(e: Event) {
+		const value = (e.target as HTMLInputElement).value;
+		cityQuery = value;
+		city = value;
+
+		if (value) {
+			citySuggestions = russianCities.filter((item) =>
+				item.city.toLowerCase().includes(value.toLowerCase())
+			);
+		} else {
+			citySuggestions = russianCities;
+		}
+	}
+
+	function selectCity(suggestion: { city: string; timezone: string }) {
+		city = suggestion.city;
+		timezone = suggestion.timezone;
+		showSuggestions = false;
+		citySuggestions = russianCities;
+	}
+
+	function onCityFocus() {
+		showSuggestions = true;
+		citySuggestions = russianCities;
+	}
+
+	function onCityBlur() {
+		// Задержка чтобы успеть обработать клик по подсказке
+		setTimeout(() => {
+			showSuggestions = false;
+		}, 200);
+	}
 </script>
 
 <div class="container mx-auto flex h-full items-center justify-center">
@@ -150,7 +178,34 @@
 		</label>
 		<label class="label">
 			<span class="label-text">Город</span>
-			<input class="input" type="text" bind:value={city} maxlength="64" />
+			<input
+				class="input"
+				type="text"
+				bind:value={city}
+				maxlength="64"
+				on:input={onCityInput}
+				on:focus={onCityFocus}
+				on:blur={onCityBlur}
+				placeholder="Начните вводить название города"
+				autocomplete="off"
+			/>
+			{#if showSuggestions && citySuggestions.length > 0}
+				<ul class="suggestions-list">
+					{#each citySuggestions as suggestion}
+						<li>
+							<button
+								type="button"
+								class="suggestion-btn"
+								on:click={() => selectCity(suggestion)}
+								on:keydown={(e) => e.key === 'Enter' && selectCity(suggestion)}
+								aria-label={`Выбрать город ${suggestion.city}`}
+							>
+								{suggestion.city} ({suggestion.timezone})
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
 		</label>
 		<label class="label">
 			<span class="label-text">Возраст</span>
@@ -158,12 +213,13 @@
 		</label>
 		<label class="label">
 			<span class="label-text">Таймзона</span>
-			<select class="input" bind:value={timezone} disabled>
-				<option value="">Выберите таймзону</option>
-				{#each timezones as tz}
-					<option value={tz}>{tz}</option>
-				{/each}
-			</select>
+			<input
+				class="input"
+				type="text"
+				bind:value={timezone}
+				readonly
+				placeholder="Выберите город для определения таймзоны"
+			/>
 		</label>
 		{#if error}
 			<div class="alert variant-filled-error">{error}</div>
@@ -181,3 +237,34 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	.suggestions-list {
+		background: #23223a;
+		border: 1px solid #444;
+		border-radius: 6px;
+		margin: 0;
+		padding: 0;
+		position: absolute;
+		z-index: 10;
+		width: 100%;
+		max-height: 180px;
+		overflow-y: auto;
+		box-shadow: 0 2px 8px #0002;
+	}
+	.suggestion-btn {
+		background: none;
+		border: none;
+		width: 100%;
+		text-align: left;
+		padding: 0.5em 1em;
+		cursor: pointer;
+		color: inherit;
+		font: inherit;
+	}
+	.suggestion-btn:hover,
+	.suggestion-btn:focus {
+		background: #181828;
+		outline: none;
+	}
+</style>

@@ -94,14 +94,31 @@
 	{#if preview}
 		<div
 			class="avatar-wrapper"
+			role="button"
+			tabindex="0"
 			on:mouseenter={() => (hover = true)}
 			on:mouseleave={() => (hover = false)}
+			on:keydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					hover = !hover;
+				}
+			}}
 		>
 			<img class="preview" src={preview} alt="avatar preview" />
 			{#if hover}
-				<div class="overlay" on:click={() => fileInput.click()}>
+				<button
+					class="overlay"
+					on:click={() => fileInput.click()}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							fileInput.click();
+						}
+					}}
+				>
 					<span>Сменить фото</span>
-				</div>
+				</button>
 			{/if}
 			<button class="delete-btn" on:click={remove} disabled={loading} title="Удалить фото">✕</button
 			>
