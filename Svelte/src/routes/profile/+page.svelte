@@ -13,9 +13,14 @@
 	let successMsg = '';
 
 	onMount(async () => {
+		if (!currentUser?.id) {
+			error = 'Пользователь не определён';
+			loading = false;
+			return;
+		}
 		try {
 			// Получаем свои объявления
-			const res = await api.get(`/ads?author=${currentUser?.id}`, token);
+			const res = await api.get(`/ads?author=${currentUser.id}`, token);
 			ads = (res || []).sort(
 				(a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
 			);

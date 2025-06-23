@@ -60,6 +60,7 @@ export const updateMyProfile = asyncHandler(
             'age',
             'timezone',
             'avatar',
+            'phone',
         ];
         for (const field of fields) {
             if (req.body[field] !== undefined) {
