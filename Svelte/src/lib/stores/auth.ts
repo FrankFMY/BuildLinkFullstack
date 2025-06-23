@@ -15,6 +15,9 @@ export interface UserProfile {
 	city?: string;
 	timezone?: string;
 	role?: 'client' | 'seller' | 'both';
+	firstName?: string;
+	lastName?: string;
+	age?: number;
 }
 
 // Начальное состояние

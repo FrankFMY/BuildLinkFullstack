@@ -3,6 +3,9 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
+		"predev": "npm run --prefix .. swagger:sync --silent",
+		"prebuild": "npm run --prefix .. swagger:sync --silent",
+		"pretest": "npm run --prefix .. swagger:sync --silent",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",

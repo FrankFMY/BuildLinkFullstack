@@ -35,6 +35,12 @@ app.use(express.json());
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+// Новый endpoint для отдачи OpenAPI-спеки в формате JSON
+app.get('/swagger.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+});
+
 app.get('/', (req, res) => {
     res.send('API is running...');
 });
