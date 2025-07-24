@@ -35,7 +35,16 @@ jobs:
               run: npm run lint
 
             - name: Test
-              run: npm test
+              env:
+                  JWT_SECRET: super-test-secret
+                  MONGO_URI: mongodb://127.0.0.1:27017/buildlink-test
+              run: |
+                  if [ "${{ matrix.package }}" = "Svelte" ]; then
+                    # Skip pretest for Svelte in CI (swagger sync requires running backend)
+                    npm run test:unit
+                  else
+                    npm test
+                  fi
 
             - name: Build
               run: |
