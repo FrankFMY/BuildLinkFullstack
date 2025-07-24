@@ -50,7 +50,7 @@
 	}
 
 	$: filteredAds = ads.filter((ad) => {
-		if (showMine && currentUserId && String(ad.authorId) !== String(currentUserId)) return false;
+		if (showMine && $user?.id && String(ad.authorId) !== String($user.id)) return false;
 		if (showWithPhoto && (!ad.photos || ad.photos.length === 0)) return false;
 		return true;
 	});
