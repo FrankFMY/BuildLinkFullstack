@@ -20,8 +20,8 @@
 	});
 	onDestroy(unsubscribe);
 
-	$: if (currentUser && currentUser.id && !currentUser._id) {
-		currentUser._id = currentUser.id;
+	$: if (currentUser && currentUser.id && !currentUser.id) {
+		currentUser.id = currentUser.id;
 	}
 
 	$: if (currentUser && currentUser.id) {
@@ -37,12 +37,12 @@
 			const res = await api.get(`/api/ads?author=${currentUser?.id}`, token);
 			ads = (res || [])
 				.map((ad: Ad) => ({
-					id: ad.id || ad._id,
+					id: ad.id || ad.id,
 					title: ad.title,
 					description: ad.description,
 					price: ad.price ?? 0,
-					author: ad.author?.username || ad.author || '—',
-					created_at: ad.created_at || ad.createdAt || ''
+					author: ad.author || '—',
+					created_at: ad.created_at || ad.created_at || ''
 				}))
 				.sort(
 					(a: Ad, b: Ad) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
