@@ -114,13 +114,7 @@
 							class="fullscreen-overlay"
 							role="dialog"
 							aria-modal="true"
-							tabindex="0"
 							on:click={closeFullscreen}
-							on:keydown={(e) => {
-								if (e.key === 'Escape') closeFullscreen();
-								if (e.key === 'ArrowLeft') prevPhoto();
-								if (e.key === 'ArrowRight') nextPhoto();
-							}}
 						>
 							<button
 								class="nav prev"
@@ -197,9 +191,6 @@
 		height: 48px;
 		object-fit: cover;
 	}
-	.thumbnails .thumb.active {
-		border-color: #3b82f6;
-	}
 	.fullscreen-overlay {
 		position: fixed;
 		inset: 0;
@@ -271,8 +262,5 @@
 		border-radius: 6px;
 		cursor: pointer;
 		outline: none;
-	}
-	.thumb-btn.active {
-		border: 2px solid #3b82f6;
 	}
 </style>

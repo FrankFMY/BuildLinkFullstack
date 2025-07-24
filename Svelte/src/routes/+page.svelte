@@ -5,10 +5,16 @@
 	import { api } from '$lib/utils/api';
 	import type { Ad } from '$lib/stores/auth';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib/stores/auth';
+	import { get } from 'svelte/store';
 
 	let ads: Ad[] = [];
 	let loading = true;
 	let error = '';
+	let showMine = false;
+	let showOthers = false;
+	let showWithPhoto = false;
+	let currentUserId = get(user)?.id || '';
 
 	onMount(async () => {
 		try {
@@ -43,6 +49,13 @@
 		}
 		return String(ad.author || '—');
 	}
+
+	$: filteredAds = ads.filter((ad) => {
+		if (showMine && ad.authorId !== currentUserId) return false;
+		if (showOthers && ad.authorId === currentUserId) return false;
+		if (showWithPhoto && (!ad.photos || ad.photos.length === 0)) return false;
+		return true;
+	});
 </script>
 
 <div class="container mx-auto py-10">
@@ -61,10 +74,15 @@
 			<p>Объявлений пока нет. Станьте первым!</p>
 		</div>
 	{:else}
+		<div class="flex gap-4 mb-6">
+			<label><input type="checkbox" bind:checked={showMine} /> Только свои</label>
+			<label><input type="checkbox" bind:checked={showOthers} /> Только чужие</label>
+			<label><input type="checkbox" bind:checked={showWithPhoto} /> Только с фото</label>
+		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-			{#each ads as ad}
+			{#each filteredAds as ad}
 				<div
-					class="card p-4 shadow-md hover:shadow-xl transition-shadow flex flex-col gap-2 cursor-pointer"
+					class="card ad-card p-4 shadow-md transition-transform duration-200 flex flex-col gap-2 cursor-pointer"
 					on:click={() => goto(`/ads/${ad.id}`)}
 					tabindex="0"
 					role="button"
@@ -73,16 +91,14 @@
 					}}
 				>
 					{#if ad.photos && ad.photos.length > 0}
-						<img
-							src={ad.photos[0]}
-							alt="Фото объявления"
-							class="w-full h-40 object-cover rounded mb-2"
-						/>
+						<div class="ad-photo-wrapper">
+							<img src={ad.photos[0]} alt="Фото объявления" class="ad-photo" />
+						</div>
 					{:else}
 						<div
-							class="w-full h-40 bg-surface-800 rounded mb-2 flex items-center justify-center text-surface-400"
+							class="ad-photo-wrapper bg-surface-800 flex items-center justify-center text-surface-400"
 						>
-							Нет фото
+							<span>Нет фото</span>
 						</div>
 					{/if}
 					<h2 class="h4">{ad.title}</h2>
@@ -110,5 +126,30 @@
 	}
 	.author-link:hover {
 		color: #fff;
+	}
+	.ad-card {
+		transition:
+			transform 0.2s,
+			box-shadow 0.2s;
+	}
+	.ad-card:hover,
+	.ad-card:focus {
+		transform: scale(1.03);
+		box-shadow: 0 6px 24px #0003;
+		z-index: 2;
+	}
+	.ad-photo-wrapper {
+		width: 100%;
+		aspect-ratio: 16/9;
+		border-radius: 12px;
+		overflow: hidden;
+		margin-bottom: 0.5rem;
+		background: #23223a;
+	}
+	.ad-photo {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
 	}
 </style>
