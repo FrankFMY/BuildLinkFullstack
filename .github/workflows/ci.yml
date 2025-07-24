@@ -48,7 +48,10 @@ jobs:
 
             - name: Build
               run: |
-                  if [ -f package.json ] && grep -q '"build"' package.json; then
+                  if [ "${{ matrix.package }}" = "Svelte" ]; then
+                    # Skip prebuild for Svelte in CI (swagger sync requires running backend)
+                    echo "Skipping build for Svelte in CI"
+                  elif [ -f package.json ] && grep -q '"build"' package.json; then
                     npm run build
                   else
                     echo "No build script, skipping."
