@@ -20,6 +20,18 @@ export interface UserProfile {
 	age?: number;
 }
 
+export interface Ad {
+	id: string;
+	title: string;
+	description: string;
+	price: number;
+	author: string;
+	authorId?: string;
+	created_at: string;
+}
+
+export type ApiError = { data?: { error?: string; message?: string }; message?: string };
+
 // Начальное состояние
 const initialToken = isBrowser ? localStorage.getItem('jwt_token') : null;
 const initialUser = isBrowser

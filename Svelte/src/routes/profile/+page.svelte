@@ -1,26 +1,27 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
+	import { onDestroy } from 'svelte';
 	import { user, authToken } from '$lib/stores/auth';
 	import { api } from '$lib/utils/api';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
 	import { get } from 'svelte/store';
+	import type { UserProfile, Ad, ApiError } from '$lib/stores/auth';
 
-	let currentUser: any = null;
+	let currentUser: UserProfile | null = null;
 	let token: string | undefined = get(authToken) || undefined;
-	let ads: any[] = [];
+	let ads: Ad[] = [];
 	let loading = false;
 	let error = '';
 	let successMsg = '';
 	let showAdModal = false;
-	let editAd: any = null;
+	let editAd: Ad | null = null;
 
 	const unsubscribe = user.subscribe((u) => {
 		currentUser = u;
 	});
 	onDestroy(unsubscribe);
 
-	$: if (currentUser && currentUser._id && !currentUser.id) {
-		currentUser.id = currentUser._id;
+	$: if (currentUser && currentUser.id && !currentUser._id) {
+		currentUser._id = currentUser.id;
 	}
 
 	$: if (currentUser && currentUser.id) {
@@ -29,26 +30,27 @@
 
 	let adsLoadedForUser = '';
 	async function loadAds() {
-		if (adsLoadedForUser === currentUser.id) return;
+		if (adsLoadedForUser === currentUser?.id) return;
 		loading = true;
 		error = '';
 		try {
-			const res = await api.get(`/api/ads?author=${currentUser.id}`, token);
+			const res = await api.get(`/api/ads?author=${currentUser?.id}`, token);
 			ads = (res || [])
-				.map((ad: any) => ({
-					id: ad._id || ad.id,
+				.map((ad: Ad) => ({
+					id: ad.id || ad._id,
 					title: ad.title,
 					description: ad.description,
 					price: ad.price ?? 0,
 					author: ad.author?.username || ad.author || '—',
-					created_at: ad.createdAt || ad.created_at || ''
+					created_at: ad.created_at || ad.createdAt || ''
 				}))
 				.sort(
-					(a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+					(a: Ad, b: Ad) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 				);
-			adsLoadedForUser = currentUser.id;
-		} catch (e: any) {
-			error = e?.data?.error || e?.data?.message || e?.message || 'Ошибка';
+			adsLoadedForUser = currentUser?.id || '';
+		} catch (e: unknown) {
+			const err = e as ApiError;
+			error = err?.data?.error || err?.data?.message || err?.message || 'Ошибка';
 			console.error('ads error:', e);
 		} finally {
 			loading = false;
@@ -71,7 +73,7 @@
 		editAd = null;
 		showAdModal = true;
 	}
-	function openEditAd(ad: any) {
+	function openEditAd(ad: Ad) {
 		editAd = ad;
 		showAdModal = true;
 	}

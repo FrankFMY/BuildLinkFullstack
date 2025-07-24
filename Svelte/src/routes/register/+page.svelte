@@ -28,8 +28,9 @@
 			userStore.set(userProfile);
 
 			await goto('/');
-		} catch (e: any) {
-			error = e.data?.message || 'Произошла ошибка при регистрации';
+		} catch (e: unknown) {
+			error =
+				(e as { data?: { message?: string } })?.data?.message || 'Произошла ошибка при регистрации';
 		} finally {
 			loading = false;
 		}

@@ -4,9 +4,6 @@
 	import { user as userStore } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
 	import AvatarUploader from '$lib/components/AvatarUploader.svelte';
-	import IMask from 'imask';
-	import { onMount } from 'svelte';
-	import cityTimezones from 'city-timezones';
 
 	// Список российских городов с таймзонами
 	const russianCities = [
@@ -44,24 +41,7 @@
 	let success = '';
 	let loading = false;
 	let phoneInput: HTMLInputElement;
-	let mask: any;
-	let cityQuery = '';
-	let citySuggestions = russianCities;
 	let showSuggestions = false;
-
-	const timezones = [
-		'Europe/Moscow',
-		'Europe/Saratov',
-		'Asia/Novosibirsk',
-		'Asia/Yekaterinburg',
-		'Europe/Kaliningrad',
-		'Asia/Vladivostok',
-		'Asia/Krasnoyarsk',
-		'Asia/Irkutsk',
-		'Asia/Sakhalin',
-		'Asia/Magadan',
-		'Asia/Kamchatka'
-	];
 
 	function handlePhoneInput(e: Event) {
 		phone = (e.target as HTMLInputElement).value;
@@ -89,7 +69,7 @@
 		loading = true;
 		try {
 			const digits = phone.replace(/\D/g, '');
-			const payload: Record<string, any> = {
+			const payload: Record<string, unknown> = {
 				firstName: firstName.trim() || undefined,
 				lastName: lastName.trim() || undefined,
 				city: city.trim() || undefined,
@@ -98,12 +78,16 @@
 				avatar: avatar || undefined,
 				phone: '+7' + digits.slice(-10)
 			};
-			const res = await api.put('/api/users/me', payload);
+			await api.put('/api/users/me', payload);
 			userStore.update((u) => (u ? { ...u, ...payload } : u));
 			success = 'Профиль обновлён';
 			setTimeout(() => goto('/profile'), 1000);
-		} catch (e: any) {
-			error = e?.data?.message || 'Ошибка сохранения';
+		} catch (e: unknown) {
+			if (e instanceof Error) {
+				error = e.message || 'Ошибка сохранения';
+			} else {
+				error = 'Ошибка сохранения';
+			}
 		} finally {
 			loading = false;
 		}
@@ -119,15 +103,14 @@
 
 	function onCityInput(e: Event) {
 		const value = (e.target as HTMLInputElement).value;
-		cityQuery = value;
 		city = value;
 
 		if (value) {
-			citySuggestions = russianCities.filter((item) =>
-				item.city.toLowerCase().includes(value.toLowerCase())
-			);
+			// citySuggestions = russianCities.filter((item) =>
+			// 	item.city.toLowerCase().includes(value.toLowerCase())
+			// );
 		} else {
-			citySuggestions = russianCities;
+			// citySuggestions = russianCities;
 		}
 	}
 
@@ -135,12 +118,12 @@
 		city = suggestion.city;
 		timezone = suggestion.timezone;
 		showSuggestions = false;
-		citySuggestions = russianCities;
+		// citySuggestions = russianCities;
 	}
 
 	function onCityFocus() {
 		showSuggestions = true;
-		citySuggestions = russianCities;
+		// citySuggestions = russianCities;
 	}
 
 	function onCityBlur() {
@@ -189,9 +172,9 @@
 				placeholder="Начните вводить название города"
 				autocomplete="off"
 			/>
-			{#if showSuggestions && citySuggestions.length > 0}
+			{#if showSuggestions && russianCities.length > 0}
 				<ul class="suggestions-list">
-					{#each citySuggestions as suggestion}
+					{#each russianCities as suggestion}
 						<li>
 							<button
 								type="button"

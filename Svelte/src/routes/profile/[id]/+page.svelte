@@ -5,12 +5,13 @@
 	import { user as userStore } from '$lib/stores/auth';
 	import { get } from 'svelte/store';
 	import { goto } from '$app/navigation';
+	import type { UserProfile, Ad, ApiError } from '$lib/stores/auth';
 
 	let userId = '';
-	let userProfile: any = null;
-	let ads: any[] = [];
+	let userProfile: UserProfile | null = null;
+	let ads: Ad[] = [];
 	let loading = true;
-	let error = '';
+	let errorMsg = '';
 
 	onMount(async () => {
 		userId = $page.params.id;
@@ -20,23 +21,24 @@
 			return;
 		}
 		loading = true;
-		error = '';
+		errorMsg = '';
 		try {
 			userProfile = await api.get(`/api/users/${userId}`);
 			const res = await api.get(`/api/ads?author=${userId}`);
 			ads = (res || [])
-				.map((ad: any) => ({
-					id: ad._id || ad.id,
+				.map((ad: Ad) => ({
+					id: ad.id,
 					title: ad.title,
 					description: ad.description,
 					price: ad.price ?? 0,
-					created_at: ad.createdAt || ad.created_at || ''
+					created_at: ad.created_at || ''
 				}))
 				.sort(
-					(a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+					(a: Ad, b: Ad) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 				);
-		} catch (e: any) {
-			error = e?.data?.error || e?.data?.message || e?.message || 'Ошибка';
+		} catch (e: unknown) {
+			const err = e as ApiError;
+			errorMsg = err?.data?.error || err?.data?.message || err?.message || 'Ошибка';
 		} finally {
 			loading = false;
 		}
@@ -46,8 +48,8 @@
 <div class="profile">
 	{#if loading}
 		<div>Загрузка профиля...</div>
-	{:else if error}
-		<div class="error">{error}</div>
+	{:else if errorMsg}
+		<div class="error">{errorMsg}</div>
 	{:else if !userProfile}
 		<div>Пользователь не найден</div>
 	{:else}
@@ -70,7 +72,7 @@
 	{/if}
 </div>
 
-{#if !loading && !error && userProfile}
+{#if !loading && !errorMsg && userProfile}
 	<div class="ads-section">
 		<h3>Объявления пользователя</h3>
 		{#if ads.length === 0}

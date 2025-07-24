@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, createEventDispatcher } from 'svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { api } from '../utils/api';
 	const dispatch = createEventDispatcher();
 
@@ -12,16 +12,6 @@
 	let hover = false;
 
 	// Drag&drop
-	function onDrop(e: DragEvent) {
-		e.preventDefault();
-		if (e.dataTransfer?.files?.length) {
-			handleFile(e.dataTransfer.files[0]);
-		}
-	}
-	function onDragOver(e: DragEvent) {
-		e.preventDefault();
-	}
-
 	function handleFile(file: File) {
 		error = '';
 		if (!file.type.startsWith('image/')) {
@@ -61,8 +51,9 @@
 				error = res.error || res.message || 'Ошибка загрузки';
 				console.error('Avatar upload error:', res);
 			}
-		} catch (e: any) {
-			error = e?.data?.error || e?.data?.message || e?.message || 'Ошибка';
+		} catch (e: unknown) {
+			const err = e as { data?: { error?: string; message?: string }; message?: string };
+			error = err.data?.error || err.data?.message || err.message || 'Ошибка';
 			console.error('Avatar upload exception:', e);
 		} finally {
 			loading = false;
@@ -81,8 +72,9 @@
 				error = res.error || res.message || 'Ошибка удаления';
 				console.error('Avatar delete error:', res);
 			}
-		} catch (e: any) {
-			error = e?.data?.error || e?.data?.message || e?.message || 'Ошибка';
+		} catch (e: unknown) {
+			const err = e as { data?: { error?: string; message?: string }; message?: string };
+			error = err.data?.error || err.data?.message || err.message || 'Ошибка';
 			console.error('Avatar delete exception:', e);
 		} finally {
 			loading = false;

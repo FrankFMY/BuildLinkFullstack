@@ -3,16 +3,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { api } from '$lib/utils/api';
-
-	interface Ad {
-		id: string;
-		title: string;
-		description: string;
-		price: number;
-		author: string;
-		authorId: string;
-		created_at: string;
-	}
+	import type { Ad } from '$lib/stores/auth';
 
 	let ads: Ad[] = [];
 	let loading = true;
@@ -21,17 +12,24 @@
 	onMount(async () => {
 		try {
 			const rawAds = await api.get('/api/ads');
-			ads = rawAds.map((ad: any) => ({
-				id: ad._id || ad.id,
-				title: ad.title,
-				description: ad.description,
-				price: ad.price ?? 0,
-				author: ad.author?.username || ad.author || '—',
-				authorId: ad.author?._id || ad.authorId || '',
-				created_at: ad.createdAt || ad.created_at || ''
-			}));
-		} catch (e: any) {
-			error = e.message;
+			ads = rawAds.map((ad: unknown) => {
+				const a = ad as Ad;
+				return {
+					id: a.id,
+					title: a.title,
+					description: a.description,
+					price: a.price ?? 0,
+					author: a.author,
+					authorId: a.authorId || '',
+					created_at: a.created_at || ''
+				};
+			});
+		} catch (e: unknown) {
+			if (e instanceof Error) {
+				error = e.message;
+			} else {
+				error = 'Произошла неизвестная ошибка';
+			}
 		} finally {
 			loading = false;
 		}

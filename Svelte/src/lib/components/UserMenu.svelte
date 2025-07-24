@@ -22,16 +22,6 @@
 		document.addEventListener('mousedown', close);
 		return () => document.removeEventListener('mousedown', close);
 	});
-
-	function onAvatarChange(e: CustomEvent<{ avatar: string }>) {
-		// Можно обновить user.avatar в store, если потребуется
-	}
-
-	function getAvatarUrl(): string | undefined {
-		return typeof currentUser?.avatar === 'string' && currentUser.avatar
-			? currentUser.avatar
-			: undefined;
-	}
 </script>
 
 <div class="user-menu" bind:this={menuRef}>
@@ -44,11 +34,7 @@
 	{#if open}
 		<div class="dropdown">
 			<div style="text-align:center; margin-bottom:0.5em;">
-				<AvatarUploader
-					avatarUrl={currentUser?.avatar}
-					token={token ?? undefined}
-					on:change={onAvatarChange}
-				/>
+				<AvatarUploader avatarUrl={currentUser?.avatar} token={token ?? undefined} />
 			</div>
 			<hr />
 			<button
