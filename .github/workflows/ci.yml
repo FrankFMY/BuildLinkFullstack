@@ -1,0 +1,46 @@
+name: CI
+
+on:
+    push:
+        branches: [main, feature/*]
+    pull_request:
+        branches: [main, feature/*]
+
+jobs:
+    build-test:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                package:
+                    - Backend
+                    - Svelte
+        defaults:
+            run:
+                working-directory: ${{ matrix.package }}
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Use Node.js 22
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  cache: 'npm'
+                  cache-dependency-path: ${{ matrix.package }}/package-lock.json
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Lint
+              run: npm run lint
+
+            - name: Test
+              run: npm test
+
+            - name: Build
+              run: |
+                  if [ -f package.json ] && grep -q '"build"' package.json; then
+                    npm run build
+                  else
+                    echo "No build script, skipping."
+                  fi
