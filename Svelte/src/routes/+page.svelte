@@ -12,7 +12,6 @@
 	let loading = true;
 	let error = '';
 	let showMine = false;
-	let showOthers = false;
 	let showWithPhoto = false;
 	let currentUserId = get(user)?.id || '';
 
@@ -51,8 +50,7 @@
 	}
 
 	$: filteredAds = ads.filter((ad) => {
-		if (showMine && ad.authorId !== currentUserId) return false;
-		if (showOthers && ad.authorId === currentUserId) return false;
+		if (showMine && currentUserId && String(ad.authorId) !== String(currentUserId)) return false;
 		if (showWithPhoto && (!ad.photos || ad.photos.length === 0)) return false;
 		return true;
 	});
@@ -76,7 +74,6 @@
 	{:else}
 		<div class="flex gap-4 mb-6">
 			<label><input type="checkbox" bind:checked={showMine} /> Только свои</label>
-			<label><input type="checkbox" bind:checked={showOthers} /> Только чужие</label>
 			<label><input type="checkbox" bind:checked={showWithPhoto} /> Только с фото</label>
 		</div>
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

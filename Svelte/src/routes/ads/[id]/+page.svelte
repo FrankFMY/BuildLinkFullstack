@@ -110,12 +110,7 @@
 						</div>
 					</div>
 					{#if fullscreen}
-						<div
-							class="fullscreen-overlay"
-							role="dialog"
-							aria-modal="true"
-							on:click={closeFullscreen}
-						>
+						<div class="fullscreen-overlay" role="dialog" aria-modal="true">
 							<button
 								class="nav prev"
 								aria-label="Предыдущее фото"
@@ -133,6 +128,9 @@
 								class="close"
 								aria-label="Закрыть"
 								on:click|stopPropagation={closeFullscreen}
+								on:keydown={(e) => {
+									if (e.key === 'Escape') closeFullscreen();
+								}}
 								tabindex="0">×</button
 							>
 						</div>
