@@ -74,7 +74,11 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
             type: ad.type,
             paymentType: ad.paymentType,
             author: ad.author,
+            authorId:
+                ad.author?._id?.toString() ||
+                (typeof ad.author === 'string' ? ad.author : ''),
             createdAt: ad.createdAt,
+            photos: ad.photos || [],
         }))
     );
 });
