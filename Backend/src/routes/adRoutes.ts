@@ -4,6 +4,7 @@ import {
     createAd,
     updateAd,
     deleteAd,
+    getAdById,
 } from '../controllers/adController';
 import authMiddleware from '../middleware/authMiddleware';
 import { uploadAdPhotos, deleteAdPhoto } from '../controllers/uploadController';
@@ -13,6 +14,7 @@ const router = express.Router();
 router.route('/').get(getAds).post(authMiddleware, createAd);
 router
     .route('/:id')
+    .get(getAdById)
     .put(authMiddleware, updateAd)
     .delete(authMiddleware, deleteAd);
 

@@ -79,6 +79,33 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
     );
 });
 
+// Получить объявление по id
+export const getAdById = asyncHandler(
+    async (req: AuthRequest, res: Response) => {
+        const ad = await Ad.findById(req.params.id).populate(
+            'author',
+            'username email role'
+        );
+        if (!ad) {
+            res.status(404);
+            throw new Error('Объявление не найдено');
+        }
+        res.json({
+            id: ad._id,
+            title: ad.title,
+            description: ad.description,
+            price: ad.price,
+            type: ad.type,
+            paymentType: ad.paymentType,
+            amount: ad.amount,
+            author: ad.author,
+            authorId: ad.author?._id || '',
+            created_at: ad.createdAt,
+            photos: ad.photos || [],
+        });
+    }
+);
+
 // @desc    Create a new ad
 // @route   POST /api/ads
 // @access  Private
