@@ -75,8 +75,9 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
             paymentType: ad.paymentType,
             author: ad.author,
             authorId:
-                ad.author?._id?.toString() ||
-                (typeof ad.author === 'string' ? ad.author : ''),
+                typeof ad.author === 'object' && ad.author?._id
+                    ? ad.author._id.toString()
+                    : ad.author?.toString() || '',
             createdAt: ad.createdAt,
             photos: ad.photos || [],
         }))
