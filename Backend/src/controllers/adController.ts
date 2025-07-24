@@ -114,7 +114,18 @@ export const createAd = asyncHandler(
             author: req.user?.id,
         });
         const createdAd = await ad.save();
-        res.status(201).json(createdAd);
+        res.status(201).json({
+            id: createdAd._id,
+            title: createdAd.title,
+            description: createdAd.description,
+            price: createdAd.price,
+            type: createdAd.type,
+            paymentType: createdAd.paymentType,
+            amount: createdAd.amount,
+            author: createdAd.author,
+            created_at: createdAd.createdAt,
+            photos: createdAd.photos || [],
+        });
     }
 );
 
