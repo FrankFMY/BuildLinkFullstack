@@ -28,6 +28,7 @@ export interface Ad {
 	author: string;
 	authorId?: string;
 	created_at: string;
+	photos?: string[];
 }
 
 export type ApiError = { data?: { error?: string; message?: string }; message?: string };

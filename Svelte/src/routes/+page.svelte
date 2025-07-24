@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { api } from '$lib/utils/api';
 	import type { Ad } from '$lib/stores/auth';
+	import { goto } from '$app/navigation';
 
 	let ads: Ad[] = [];
 	let loading = true;
@@ -21,7 +22,8 @@
 					price: a.price ?? 0,
 					author: a.author,
 					authorId: a.authorId || '',
-					created_at: a.created_at || ''
+					created_at: a.created_at || '',
+					photos: a.photos || []
 				};
 			});
 		} catch (e: unknown) {
@@ -34,6 +36,13 @@
 			loading = false;
 		}
 	});
+
+	function getAuthorName(ad: Ad): string {
+		if (ad && typeof ad.author === 'object' && ad.author !== null && 'username' in ad.author) {
+			return (ad.author as any).username;
+		}
+		return String(ad.author || '—');
+	}
 </script>
 
 <div class="container mx-auto py-10">
@@ -54,13 +63,36 @@
 	{:else}
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 			{#each ads as ad}
-				<div class="card p-4 shadow-md hover:shadow-xl transition-shadow flex flex-col gap-2">
+				<div
+					class="card p-4 shadow-md hover:shadow-xl transition-shadow flex flex-col gap-2 cursor-pointer"
+					on:click={() => goto(`/ads/${ad.id}`)}
+					tabindex="0"
+					role="button"
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') goto(`/ads/${ad.id}`);
+					}}
+				>
+					{#if ad.photos && ad.photos.length > 0}
+						<img
+							src={ad.photos[0]}
+							alt="Фото объявления"
+							class="w-full h-40 object-cover rounded mb-2"
+						/>
+					{:else}
+						<div
+							class="w-full h-40 bg-surface-800 rounded mb-2 flex items-center justify-center text-surface-400"
+						>
+							Нет фото
+						</div>
+					{/if}
 					<h2 class="h4">{ad.title}</h2>
 					<p class="text-sm text-surface-500 flex-grow">{ad.description}</p>
 					<div class="flex justify-between items-center mt-2">
 						<span class="font-bold text-lg">{ad.price.toLocaleString('ru-RU')} ₽</span>
-						<a class="author-link text-xs text-surface-400" href={`/profile/${ad.authorId}`}
-							>@{ad.author}</a
+						<a
+							class="author-link text-xs text-surface-400"
+							href={`/profile/${ad.authorId}`}
+							on:click|stopPropagation>{'@' + getAuthorName(ad)}</a
 						>
 					</div>
 				</div>

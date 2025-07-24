@@ -14,7 +14,6 @@
 	let paymentType: 'once' | 'day' | 'hour' | 'month' = 'once';
 	let photos: File[] = [];
 	let photoPreviews: string[] = [];
-	let mainPhotoIdx = 0;
 
 	function handlePhotoChange(e: Event) {
 		const files = (e.target as HTMLInputElement).files;
@@ -32,13 +31,11 @@
 
 	function setMainPhoto(idx: number) {
 		if (idx === 0) return;
-		const [main, ...rest] = photos;
 		const newMain = photos[idx];
 		photos.splice(idx, 1);
 		photos.unshift(newMain);
 		photoPreviews.splice(idx, 1);
 		photoPreviews.unshift(URL.createObjectURL(newMain));
-		mainPhotoIdx = 0;
 		photos = [...photos];
 		photoPreviews = [...photoPreviews];
 	}
