@@ -11,6 +11,7 @@ import swaggerSpec from './swagger.js';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
+import path from 'path';
 
 dotenv.config();
 
@@ -32,6 +33,10 @@ app.use(
 );
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Обслуживание статических файлов из папки uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

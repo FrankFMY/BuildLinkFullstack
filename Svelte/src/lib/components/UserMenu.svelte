@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { user, authToken, logout, type UserProfile } from '../stores/auth';
+	import { user, authToken, logout } from '../stores/auth';
+	import type { UserProfile } from '../stores/auth';
 	import AvatarUploader from './AvatarUploader.svelte';
 	import { get } from 'svelte/store';
 

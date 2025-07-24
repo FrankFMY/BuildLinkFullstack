@@ -78,7 +78,7 @@ export const getAds = asyncHandler(async (req: AuthRequest, res: Response) => {
                 typeof ad.author === 'object' && ad.author?._id
                     ? ad.author._id.toString()
                     : ad.author?.toString() || '',
-            createdAt: ad.createdAt,
+            created_at: ad.createdAt,
             photos: ad.photos || [],
         }))
     );
@@ -155,6 +155,7 @@ export const createAd = asyncHandler(
             paymentType: createdAd.paymentType,
             amount: createdAd.amount,
             author: createdAd.author,
+            authorId: createdAd.author.toString(),
             created_at: createdAd.createdAt,
             photos: createdAd.photos || [],
         });

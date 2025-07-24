@@ -8,16 +8,18 @@ import { sanitizeString } from '../utils/validation';
 export const getUserProfile = asyncHandler(
     async (req: Request, res: Response) => {
         const user = await User.findById(req.params.id).select(
-            '-password -email -role'
+            '-password -role'
         );
         if (!user) {
             res.status(404);
             throw new Error('Пользователь не найден');
         }
-        // Возвращаем только whitelisted поля
+        // Возвращаем публичные поля включая email и phone
         const publicFields = [
             '_id',
             'username',
+            'email',
+            'phone',
             'firstName',
             'lastName',
             'middleName',

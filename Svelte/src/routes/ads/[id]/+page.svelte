@@ -2,7 +2,6 @@
 	import { onMount } from 'svelte';
 	import { api } from '$lib/utils/api';
 	import { page } from '$app/stores';
-	import { goto } from '$app/navigation';
 
 	interface Ad {
 		id: string;
@@ -40,7 +39,7 @@
 
 	function getAuthorName(ad: Ad): string {
 		if (ad && typeof ad.author === 'object' && ad.author !== null && 'username' in ad.author) {
-			return (ad.author as any).username;
+			return (ad.author as { username: string }).username;
 		}
 		return String(ad.author || '—');
 	}

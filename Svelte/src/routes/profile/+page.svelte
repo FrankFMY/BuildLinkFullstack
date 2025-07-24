@@ -20,10 +20,6 @@
 	});
 	onDestroy(unsubscribe);
 
-	$: if (currentUser && currentUser.id && !currentUser.id) {
-		currentUser.id = currentUser.id;
-	}
-
 	$: if (currentUser && currentUser.id) {
 		loadAds();
 	}
@@ -34,7 +30,12 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await api.get(`/api/ads?author=${currentUser?.id}`, token);
+			console.log('Loading ads for user:', currentUser?.id);
+			// Используем правильный параметр authorId для фильтрации
+			const url = `/api/ads?author=${currentUser?.id}`;
+			console.log('Request URL:', url);
+			const res = await api.get(url);
+			console.log('Response from API:', res);
 			ads = (res || [])
 				.map((ad: Ad) => ({
 					id: ad.id || ad.id,
@@ -42,11 +43,14 @@
 					description: ad.description,
 					price: ad.price ?? 0,
 					author: ad.author || '—',
-					created_at: ad.created_at || ad.created_at || ''
+					authorId: ad.authorId || '',
+					created_at: ad.created_at || ad.created_at || '',
+					photos: ad.photos || []
 				}))
 				.sort(
 					(a: Ad, b: Ad) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 				);
+			console.log('Mapped ads:', ads);
 			adsLoadedForUser = currentUser?.id || '';
 		} catch (e: unknown) {
 			const err = e as ApiError;

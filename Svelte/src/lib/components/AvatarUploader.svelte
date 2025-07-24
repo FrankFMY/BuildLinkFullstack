@@ -11,6 +11,9 @@
 	let error = '';
 	let hover = false;
 
+	// Обновляем preview при изменении avatarUrl
+	$: preview = avatarUrl || '';
+
 	// Drag&drop
 	function handleFile(file: File) {
 		error = '';
@@ -42,10 +45,13 @@
 		error = '';
 		const form = new FormData();
 		form.append('avatar', file);
+		console.log('Uploading avatar, token:', token);
 		try {
-			const res = await api.post('/users/me/avatar', form, token);
+			const res = await api.post('/api/users/me/avatar', form, token);
+			console.log('Avatar upload response:', res);
 			if (res.avatar) {
-				preview = res.avatar;
+				const fullUrl = res.avatar;
+				preview = fullUrl;
 				dispatch('change', { avatar: res.avatar });
 			} else {
 				error = res.error || res.message || 'Ошибка загрузки';
@@ -64,7 +70,7 @@
 		loading = true;
 		error = '';
 		try {
-			const res = await api.delete('/users/me/avatar', token);
+			const res = await api.delete('/api/users/me/avatar', token);
 			if (res.message) {
 				preview = '';
 				dispatch('change', { avatar: '' });

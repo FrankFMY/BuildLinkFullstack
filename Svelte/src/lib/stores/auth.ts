@@ -33,6 +33,31 @@ export interface Ad {
 
 export type ApiError = { data?: { error?: string; message?: string }; message?: string };
 
+// Функция для загрузки профиля пользователя
+export async function loadUserProfile() {
+	try {
+		const profile = await api.get('/api/auth/me');
+		if (profile && profile._id) {
+			// Преобразуем _id в id для совместимости
+			const userProfile = {
+				...profile,
+				id: profile._id,
+				// Устанавливаем роль по умолчанию, если её нет
+				role: profile.role || 'client'
+			};
+			// Обрабатываем avatar
+			if ('avatar' in userProfile && userProfile.avatar === null) userProfile.avatar = undefined;
+			user.set(userProfile);
+			return userProfile;
+		}
+	} catch (error) {
+		console.error('Ошибка загрузки профиля пользователя:', error);
+		// Если токен недействителен, очищаем данные
+		logout();
+	}
+	return null;
+}
+
 // Начальное состояние
 const initialToken = isBrowser ? localStorage.getItem('jwt_token') : null;
 const initialUser = isBrowser
@@ -83,4 +108,9 @@ export function logout() {
 export async function changeRole(newRole: 'client' | 'seller' | 'both') {
 	const res = await api.put('/api/users/me/role', { role: newRole });
 	user.update((u) => (u ? { ...u, role: res.role } : u));
+}
+
+// Инициализация: загружаем профиль пользователя, если есть токен
+if (isBrowser && initialToken && !initialUser) {
+	loadUserProfile();
 }

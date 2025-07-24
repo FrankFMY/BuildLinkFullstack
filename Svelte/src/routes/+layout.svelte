@@ -2,22 +2,19 @@
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
 	import '../app.postcss';
 	import { onMount } from 'svelte';
-	import { user, authToken, logout } from '$lib/stores/auth';
-	import { api } from '$lib/utils/api';
+	import { user, authToken, logout, loadUserProfile } from '$lib/stores/auth';
 	import UserMenu from '$lib/components/UserMenu.svelte';
 
-	onMount(() => {
+	onMount(async () => {
 		const token = localStorage.getItem('jwt_token');
 		if (token && !$user) {
 			authToken.set(token);
-			api
-				.get('/api/auth/me')
-				.then((userProfile) => {
-					user.set(userProfile);
-				})
-				.catch(() => {
-					logout();
-				});
+			try {
+				await loadUserProfile();
+			} catch (error) {
+				console.error('Ошибка загрузки профиля:', error);
+				logout();
+			}
 		}
 	});
 </script>
